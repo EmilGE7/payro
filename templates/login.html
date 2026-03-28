@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block auth_content %}
+<div class="auth-container">
+    <div class="auth-card glass shadow-premium">
+        <h1 class="logo" style="text-align: center; margin-bottom: 2rem;">Sign In</h1>
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login to Dashboard</button>
+        </form>
+        <div style="margin-top: 2rem; padding: 1rem; font-size: 0.8rem; color: var(--text-secondary); border-top: 1px solid var(--glass-border);">
+            <p><strong>Demo Credentials:</strong></p>
+            <p>Admin: admin / admin123</p>
+            <p>HR: hr_mgr / hr123</p>
+            <p>Accounting: acc_mgr / acc123</p>
+            <p>Employee: emp1 / emp123</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

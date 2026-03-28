@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 1.875rem; font-weight: 700;">Welcome back, {{ user.username }}</h1>
+        <p style="color: var(--text-secondary);">Here's what's happening in the Payroll System today.</p>
+    </div>
+    <div class="glass" style="padding: 0.5rem 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+        {{ now.strftime('%B %d, %Y') if now else 'Today' }}
+    </div>
+</header>
+
+<div class="grid-stats">
+    <div class="stat-card glass shadow-premium">
+        <div class="stat-label">Total Employees</div>
+        <div class="stat-value">124</div>
+        <div style="color: var(--success); font-size: 0.75rem;">+12% from last month</div>
+    </div>
+    <div class="stat-card glass shadow-premium">
+        <div class="stat-label">Pending Payroll</div>
+        <div class="stat-value">$45,200</div>
+        <div style="color: var(--text-secondary); font-size: 0.75rem;">For current month</div>
+    </div>
+    <div class="stat-card glass shadow-premium">
+        <div class="stat-label">Leave Requests</div>
+        <div class="stat-value">8</div>
+        <div style="color: var(--danger); font-size: 0.75rem;">3 require approval</div>
+    </div>
+    <div class="stat-card glass shadow-premium">
+        <div class="stat-label">System Health</div>
+        <div class="stat-value">Optimal</div>
+        <div style="color: var(--success); font-size: 0.75rem;">All systems operational</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <div class="glass" style="padding: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Recent Activity</h2>
+        <table style="width: 100%; border-collapse: collapse; color: var(--text-secondary);">
+            <thead>
+                <tr style="text-align: left; border-bottom: 1px solid var(--glass-border);">
+                    <th style="padding: 1rem 0;">Activity</th>
+                    <th style="padding: 1rem 0;">User</th>
+                    <th style="padding: 1rem 0;">Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                    <td style="padding: 1rem 0; color: var(--text-primary);">Payroll Processed</td>
+                    <td style="padding: 1rem 0;">Accounting Dept</td>
+                    <td style="padding: 1rem 0;">2h ago</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                    <td style="padding: 1rem 0; color: var(--text-primary);">New Employee Joined</td>
+                    <td style="padding: 1rem 0;">HR Dept</td>
+                    <td style="padding: 1rem 0;">5h ago</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                    <td style="padding: 1rem 0; color: var(--text-primary);">System Backup</td>
+                    <td style="padding: 1rem 0;">Admin</td>
+                    <td style="padding: 1rem 0;">Yesterday</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="glass" style="padding: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Quick Actions</h2>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <button class="btn glass" style="text-align: left; background: rgba(255, 255, 255, 0.05);">Add New Employee</button>
+            <button class="btn glass" style="text-align: left; background: rgba(255, 255, 255, 0.05);">Generate Report</button>
+            <button class="btn glass" style="text-align: left; background: rgba(255, 255, 255, 0.05);">Approve Leaves</button>
+            <button class="btn glass" style="text-align: left; background: rgba(255, 255, 255, 0.05);">System Settings</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

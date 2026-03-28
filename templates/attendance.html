@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Attendance Log{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 2.5rem;">
+    <h1 style="font-size: 1.875rem; font-weight: 700;">Attendance & Leaves</h1>
+    <p style="color: var(--text-secondary);">Tracking time and absence requests.</p>
+</header>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Left Column: Role Dependent -->
+    {% if current_user.role == 'employee' %}
+    <div class="glass" style="padding: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Request Leave</h2>
+        <form action="{{ url_for('view_attendance') }}" method="POST">
+            <div class="input-group">
+                <label>Start Date</label>
+                <input type="date" name="start_date" required>
+            </div>
+            <div class="input-group">
+                <label>End Date</label>
+                <input type="date" name="end_date" required>
+            </div>
+            <div class="input-group">
+                <label>Reason</label>
+                <textarea name="reason" class="glass" style="width: 100%; min-height: 100px; padding: 0.75rem; color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem; background: rgba(255,255,255,0.05);"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+        </form>
+    </div>
+    {% else %}
+    <div class="glass" style="padding: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Pending Leave Requests</h2>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for leave in pending_leaves %}
+            <div class="glass" style="padding: 1.5rem; border-color: rgba(255,255,255,0.05);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <strong>{{ leave.user.username }}</strong>
+                    <span style="color: #fbbf24;">{{ leave.status }}</span>
+                </div>
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    {{ leave.start_date }} to {{ leave.end_date }}<br>
+                    Reason: {{ leave.reason }}
+                </p>
+                <form action="{{ url_for('view_attendance') }}" method="POST" style="display: flex; gap: 0.5rem;">
+                    <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                    <button type="submit" name="action" value="Approved" class="btn btn-primary" style="padding: 0.4rem; font-size: 0.75rem;">Approve</button>
+                    <button type="submit" name="action" value="Rejected" class="btn glass" style="padding: 0.4rem; font-size: 0.75rem; background: rgba(239, 68, 68, 0.1); color: var(--danger);">Reject</button>
+                </form>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary);">No pending requests.</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="glass" style="padding: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">My / Historical Records</h2>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% if current_user.role == 'employee' %}
+                {% for leave in my_leaves %}
+                <div class="glass" style="padding: 1rem; border-color: rgba(255,255,255,0.05); display: flex; justify-content: space-between;">
+                    <div>
+                        <div>{{ leave.start_date }} - {{ leave.end_date }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ leave.reason }}</div>
+                    </div>
+                    <div style="color: {% if leave.status == 'Approved' %}var(--success){% elif leave.status == 'Rejected' %}var(--danger){% else %}#fbbf24{% endif %};">
+                        {{ leave.status }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-secondary);">Recent activity will appear here.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

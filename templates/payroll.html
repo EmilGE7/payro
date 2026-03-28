@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Payroll Processing{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 1.875rem; font-weight: 700;">Payroll Management</h1>
+        <p style="color: var(--text-secondary);">Salary processing and financial records.</p>
+    </div>
+    <button class="btn btn-primary" style="width: auto; padding: 0.75rem 1.5rem;">Run Payroll Cycle</button>
+</header>
+
+<div class="grid-stats">
+    <div class="stat-card glass">
+        <div class="stat-label">Total Payout (This Month)</div>
+        <div class="stat-value">$182,450.00</div>
+    </div>
+    <div class="stat-card glass">
+        <div class="stat-label">Tax Deductions</div>
+        <div class="stat-value">$12,300.20</div>
+    </div>
+    <div class="stat-card glass">
+        <div class="stat-label">Bonuses Disbursed</div>
+        <div class="stat-value">$5,000.00</div>
+    </div>
+</div>
+
+<div class="glass" style="padding: 2rem;">
+    <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Salary Slip Records</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align: left; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary);">
+                <th style="padding: 1rem;">Employee</th>
+                <th style="padding: 1rem;">Base</th>
+                <th style="padding: 1rem;">Allowance</th>
+                <th style="padding: 1rem;">Deduction</th>
+                <th style="padding: 1rem;">Net Pay</th>
+                <th style="padding: 1rem;">Date</th>
+                <th style="padding: 1rem;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <td style="padding: 1rem; color: var(--text-primary);">John Doe</td>
+                <td style="padding: 1rem;">$50,000</td>
+                <td style="padding: 1rem;">$5,000</td>
+                <td style="padding: 1rem;">$2,000</td>
+                <td style="padding: 1rem; font-weight: 700; color: var(--primary);">$53,000</td>
+                <td style="padding: 1rem;">Mar 25, 2026</td>
+                <td style="padding: 1rem;"><a href="#" style="color: var(--primary); text-decoration: none;">View Slip</a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

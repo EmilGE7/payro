@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Employee Roster{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 1.875rem; font-weight: 700;">Employee Management</h1>
+        <p style="color: var(--text-secondary);">View and manage organization members.</p>
+    </div>
+    {% if current_user.role == 'admin' %}
+    <button class="btn btn-primary" onclick="document.getElementById('addModal').style.display='flex'" style="width: auto; padding: 0.75rem 1.5rem;">Add New Employee</button>
+    {% endif %}
+</header>
+
+<!-- Add Modal -->
+<div id="addModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark);">
+        <h2 style="margin-bottom: 1.5rem;">Add Employee</h2>
+        <form action="{{ url_for('view_employees') }}" method="POST">
+            <div class="input-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="input-group">
+                <select name="role" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                    <option value="employee">Employee</option>
+                    <option value="hr">HR</option>
+                    <option value="accounting">Accounting</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <select name="dept_id" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}">{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary">Save Employee</button>
+                <button type="button" class="btn glass" onclick="document.getElementById('addModal').style.display='none'">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="glass" style="padding: 2rem; overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+        <thead>
+            <tr style="text-align: left; border-bottom: 2px solid var(--glass-border); color: var(--text-secondary);">
+                <th style="padding: 1rem;">ID</th>
+                <th style="padding: 1rem;">Name</th>
+                <th style="padding: 1rem;">Role</th>
+                <th style="padding: 1rem;">Department</th>
+                <th style="padding: 1rem;">Status</th>
+                <th style="padding: 1rem;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: var(--transition);">
+                <td style="padding: 1rem;">#{{ emp.id }}</td>
+                <td style="padding: 1rem;">
+                    <div style="font-weight: 600;">{{ emp.username }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ emp.email }}</div>
+                </td>
+                <td style="padding: 1rem;"><span class="glass" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">{{ emp.role|upper }}</span></td>
+                <td style="padding: 1rem;">{{ emp.profile.dept.name if emp.profile and emp.profile.dept else 'N/A' }}</td>
+                <td style="padding: 1rem;"><span style="color: var(--success);">● Active</span></td>
+                <td style="padding: 1rem;">
+                    <a href="#" style="color: var(--primary); text-decoration: none; margin-right: 1rem;">Edit</a>
+                    <a href="#" style="color: var(--danger); text-decoration: none;">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
