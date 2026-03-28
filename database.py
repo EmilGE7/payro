@@ -1,5 +1,6 @@
 from flask import Flask
 from models import db
+from sqlalchemy import text
 import os
 
 def create_app():
@@ -8,11 +9,11 @@ def create_app():
     DATABASE_URL = os.environ.get("DATABASE_URL")
 
     if not DATABASE_URL:
-        # Crucial for Vercel production to fail fast if config is missing
         raise ValueError("DATABASE_URL missing")
 
-    # Debug log for Vercel Functions -> Logs (Only for debugging)
-    # print("Connecting to DATABASE_URL:", DATABASE_URL[:20] + "...") 
+    # Debug logs for Vercel Runtime Logs
+    print("Initializing Database Connection...")
+    # print("DATABASE_URL:", DATABASE_URL) # Be careful with logging credentials in real production
 
     # Fix postgres:// issue
     if DATABASE_URL.startswith("postgres://"):
@@ -28,7 +29,14 @@ def create_app():
 
     db.init_app(app)
 
-    # NOTE: db.create_all() removed for production serverless environment.
-    # Schema initialization should be done via seed.py locally or migrations.
+    # ✅ STEP 3: Force DB Test (Connection Health Check)
+    with app.app_context():
+        try:
+            db.session.execute(text("SELECT 1"))
+            print("DB CONNECTED ✅")
+        except Exception as e:
+            print("DB ERROR ❌", e)
+            # We don't raise here to allow the app to start, 
+            # but it will be visible in the logs.
 
     return app
