@@ -8,7 +8,11 @@ def create_app():
     DATABASE_URL = os.environ.get("DATABASE_URL")
 
     if not DATABASE_URL:
-        raise ValueError("DATABASE_URL is missing!")
+        # Crucial for Vercel production to fail fast if config is missing
+        raise ValueError("DATABASE_URL missing")
+
+    # Debug log for Vercel Functions -> Logs (Only for debugging)
+    # print("Connecting to DATABASE_URL:", DATABASE_URL[:20] + "...") 
 
     # Fix postgres:// issue
     if DATABASE_URL.startswith("postgres://"):
@@ -20,13 +24,11 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # ✅ FIX SECRET KEY
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 
     db.init_app(app)
 
-    with app.app_context():
-        db.create_all()
+    # NOTE: db.create_all() removed for production serverless environment.
+    # Schema initialization should be done via seed.py locally or migrations.
 
     return app
