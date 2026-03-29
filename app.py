@@ -9,8 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import UUID
-from supabase import create_client, Client
-from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from fpdf import FPDF
 from openai import OpenAI
@@ -26,7 +25,8 @@ class User(db.Model, UserMixin):
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    role = db.Column(db.String(20), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), nullable=False) # admin, hr, accounting, employee
     profile = db.relationship('EmployeeProfile', backref='user', uselist=False)
 
 class Department(db.Model):
@@ -154,18 +154,11 @@ db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-if SUPABASE_URL and SUPABASE_KEY:
-    app.supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 with app.app_context():
     try:
         if DATABASE_URL:
             db.session.execute(text("SELECT 1"))
-            # Success: DB Connected
     except Exception as e:
-        # Silent fail locally or log for production
         pass
 
 @login_manager.user_loader
@@ -196,12 +189,11 @@ def index():
 def login():
     if request.method == 'POST':
         email, password = request.form.get('email'), request.form.get('password')
-        try:
-            auth = app.supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if auth.user:
-                user = User.query.filter_by(email=email).first()
-                if user: login_user(user); return redirect(url_for('dashboard'))
-        except Exception: flash('Login failed', 'danger')
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password_hash, password):
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        flash('Invalid email or password', 'danger')
     return render_template('login.html')
 
 @app.route('/logout')
@@ -225,16 +217,21 @@ def view_employees():
     if request.method == 'POST' and current_user.role == 'admin':
         name, email, password, role, dept_id = request.form.get('name'), request.form.get('email'), request.form.get('password'), request.form.get('role'), request.form.get('dept_id')
         try:
-            auth = app.supabase.auth.sign_up({"email": email, "password": password, "options": {"data": {"name": name}}})
-            if auth.user:
-                time.sleep(1); user = User.query.filter_by(email=email).first()
-                if user:
-                    user.role = role
-                    profile = EmployeeProfile(user_id=user.id, dept_id=dept_id, job_title=f"{role.capitalize()} Staff")
-                    db.session.add(profile); db.session.flush()
-                    db.session.add(SalaryStructure(profile_id=profile.id, base_salary=50000))
-                    db.session.commit(); flash(f"Added {name}", "success")
-        except Exception: flash("Error adding employee", "danger")
+            hashed_password = generate_password_hash(password)
+            user = User(name=name, email=email, password_hash=hashed_password, role=role)
+            db.session.add(user)
+            db.session.flush() # To get user.id for profile
+            
+            profile = EmployeeProfile(user_id=user.id, dept_id=dept_id, job_title=f"{role.capitalize()} Staff")
+            db.session.add(profile)
+            db.session.flush()
+            
+            db.session.add(SalaryStructure(profile_id=profile.id, base_salary=50000))
+            db.session.commit()
+            flash(f"Added {name}", "success")
+        except Exception as e: 
+            db.session.rollback()
+            flash(f"Error adding employee: {str(e)}", "danger")
     return render_template('employees.html', employees=User.query.all(), departments=Department.query.all())
 
 @app.route('/attendance', methods=['GET', 'POST'])
@@ -283,6 +280,5 @@ def download_payslip(id):
     if not rec or (current_user.role == 'employee' and rec.user_id != current_user.id): return redirect(url_for('dashboard'))
     return send_file(io.BytesIO(generate_payslip_pdf(rec)), mimetype='application/pdf', as_attachment=True, download_name=f'Payslip_{rec.month}_{rec.year}.pdf')
 
-# Development entry point
 if __name__ == '__main__':
     app.run(debug=False)
