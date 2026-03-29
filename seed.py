@@ -24,7 +24,7 @@ def seed_db():
             admin = User(
                 name='System Admin',
                 email=admin_email,
-                password='admin123',
+                password=generate_password_hash('admin123'),
                 role='admin'
             )
             db.session.add(admin)

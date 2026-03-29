@@ -215,7 +215,7 @@ def login():
     if request.method == 'POST':
         email, password = request.form.get('email'), request.form.get('password')
         user = User.query.filter_by(email=email).first()
-        if user and user.password == password:
+        if user and check_password_hash(user.password, password):
             login_user(user)
             session['user_id'] = str(user.id)
             return redirect(url_for('dashboard'))
@@ -243,7 +243,8 @@ def view_employees():
     if request.method == 'POST' and current_user.role == 'admin':
         name, email, password, role, dept_id = request.form.get('name'), request.form.get('email'), request.form.get('password'), request.form.get('role'), request.form.get('dept_id')
         try:
-            user = User(name=name, email=email, password=password, role=role)
+            hashed_password = generate_password_hash(password)
+            user = User(name=name, email=email, password=hashed_password, role=role)
             db.session.add(user)
             db.session.flush() # To get user.id for profile
             
