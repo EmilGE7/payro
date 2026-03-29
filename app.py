@@ -151,6 +151,9 @@ if DATABASE_URL:
     # Ensure sslmode=require is present in the URL if not already specified
     if "sslmode" not in DATABASE_URL:
         DATABASE_URL += ("&" if "?" in DATABASE_URL else "?") + "sslmode=require"
+    
+    # Supabase connection pooler fix: keepalives and idle timeout
+    DATABASE_URL = DATABASE_URL + "&keepalives=1&keepalives_idle=30"
 
 print("USING DB:", DATABASE_URL)
 
@@ -161,9 +164,10 @@ app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback_secret")
 # Production-grade engine options for connection stability
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True,
+    "pool_recycle": 300,
     "connect_args": {
         "sslmode": "require",
-        "connect_timeout": 10
+        "connect_timeout": 15
     }
 }
 
