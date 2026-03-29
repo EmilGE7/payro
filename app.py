@@ -25,7 +25,7 @@ class User(db.Model, UserMixin):
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False) # admin, hr, accounting, employee
     profile = db.relationship('EmployeeProfile', backref='user', uselist=False)
 
@@ -215,7 +215,7 @@ def login():
     if request.method == 'POST':
         email, password = request.form.get('email'), request.form.get('password')
         user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, password):
+        if user and user.password == password:
             login_user(user)
             return redirect(url_for('dashboard'))
         flash('Invalid email or password', 'danger')
@@ -242,8 +242,7 @@ def view_employees():
     if request.method == 'POST' and current_user.role == 'admin':
         name, email, password, role, dept_id = request.form.get('name'), request.form.get('email'), request.form.get('password'), request.form.get('role'), request.form.get('dept_id')
         try:
-            hashed_password = generate_password_hash(password)
-            user = User(name=name, email=email, password_hash=hashed_password, role=role)
+            user = User(name=name, email=email, password=password, role=role)
             db.session.add(user)
             db.session.flush() # To get user.id for profile
             
