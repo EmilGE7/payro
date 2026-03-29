@@ -18,7 +18,7 @@
         <h2 style="margin-bottom: 1.5rem;">Add Employee</h2>
         <form action="{{ url_for('view_employees') }}" method="POST">
             <div class="input-group">
-                <input type="text" name="username" placeholder="Username" required>
+                <input type="text" name="name" placeholder="Full Name" required>
             </div>
             <div class="input-group">
                 <input type="email" name="email" placeholder="Email" required>
@@ -64,9 +64,9 @@
         <tbody>
             {% for emp in employees %}
             <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: var(--transition);">
-                <td style="padding: 1rem;">#{{ emp.id }}</td>
+                <td style="padding: 1rem;">#{{ emp.id|string|truncate(8, True, '') }}</td>
                 <td style="padding: 1rem;">
-                    <div style="font-weight: 600;">{{ emp.username }}</div>
+                    <div style="font-weight: 600;">{{ emp.name }}</div>
                     <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ emp.email }}</div>
                 </td>
                 <td style="padding: 1rem;"><span class="glass" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">{{ emp.role|upper }}</span></td>

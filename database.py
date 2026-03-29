@@ -1,6 +1,7 @@
 from flask import Flask
 from models import db
 from sqlalchemy import text
+from supabase import create_client, Client
 import os
 
 def create_app():
@@ -26,6 +27,14 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
+
+    # Supabase Client Initialization
+    SUPABASE_URL = os.environ.get("SUPABASE_URL")
+    SUPABASE_KEY = os.environ.get("SUPABASE_KEY") # Anon Key
+    if SUPABASE_URL and SUPABASE_KEY:
+        app.supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    else:
+        print("WARNING: SUPABASE_URL or SUPABASE_KEY missing. Auth might fail.")
 
     db.init_app(app)
 

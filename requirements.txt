@@ -4,3 +4,6 @@ Flask-Login
 Werkzeug
 psycopg2-binary
 gunicorn
+supabase
+openai
+fpdf2

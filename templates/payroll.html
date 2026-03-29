@@ -7,49 +7,63 @@
         <h1 style="font-size: 1.875rem; font-weight: 700;">Payroll Management</h1>
         <p style="color: var(--text-secondary);">Salary processing and financial records.</p>
     </div>
-    <button class="btn btn-primary" style="width: auto; padding: 0.75rem 1.5rem;">Run Payroll Cycle</button>
+    <button class="btn btn-primary" style="width: auto; padding: 0.75rem 1.5rem;" onclick="location.reload()">Refresh Data</button>
 </header>
 
 <div class="grid-stats">
-    <div class="stat-card glass">
+    <div class="stat-card glass shadow-premium">
         <div class="stat-label">Total Payout (This Month)</div>
-        <div class="stat-value">$182,450.00</div>
+        <div class="stat-value">${{ "{:,.2f}".format(total_payout) }}</div>
     </div>
-    <div class="stat-card glass">
-        <div class="stat-label">Tax Deductions</div>
-        <div class="stat-value">$12,300.20</div>
+    <div class="stat-card glass shadow-premium">
+        <div class="stat-label">Estimated Tax</div>
+        <div class="stat-value">${{ "{:,.2f}".format(tax_est) }}</div>
     </div>
-    <div class="stat-card glass">
+    <div class="stat-card glass shadow-premium">
         <div class="stat-label">Bonuses Disbursed</div>
-        <div class="stat-value">$5,000.00</div>
+        <div class="stat-value">${{ "{:,.2f}".format(bonuses_est) }}</div>
     </div>
 </div>
 
 <div class="glass" style="padding: 2rem;">
-    <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Salary Slip Records</h2>
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="text-align: left; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary);">
-                <th style="padding: 1rem;">Employee</th>
-                <th style="padding: 1rem;">Base</th>
-                <th style="padding: 1rem;">Allowance</th>
-                <th style="padding: 1rem;">Deduction</th>
-                <th style="padding: 1rem;">Net Pay</th>
-                <th style="padding: 1rem;">Date</th>
-                <th style="padding: 1rem;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                <td style="padding: 1rem; color: var(--text-primary);">John Doe</td>
-                <td style="padding: 1rem;">$50,000</td>
-                <td style="padding: 1rem;">$5,000</td>
-                <td style="padding: 1rem;">$2,000</td>
-                <td style="padding: 1rem; font-weight: 700; color: var(--primary);">$53,000</td>
-                <td style="padding: 1rem;">Mar 25, 2026</td>
-                <td style="padding: 1rem;"><a href="#" style="color: var(--primary); text-decoration: none;">View Slip</a></td>
-            </tr>
-        </tbody>
-    </table>
+    <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 700;">Salary Slip Records</h2>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 0.875rem;">
+                    <th style="padding: 1rem;">EMPLOYEE</th>
+                    <th style="padding: 1rem;">BASE</th>
+                    <th style="padding: 1rem;">ALLOWANCE</th>
+                    <th style="padding: 1rem;">DEDUCTION</th>
+                    <th style="padding: 1rem;">NET PAY</th>
+                    <th style="padding: 1rem;">ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.03); transition: var(--transition);">
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600;">{{ record.user.name }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ record.month }}/{{ record.year }}</div>
+                    </td>
+                    {% set ss = record.user.profile.salary_structure if record.user.profile else None %}
+                    <td style="padding: 1rem;">${{ "{:,.0f}".format(ss.base_salary if ss else 0) }}</td>
+                    <td style="padding: 1rem; color: var(--success);">+${{ "{:,.0f}".format(ss.allowances if ss else 0) }}</td>
+                    <td style="padding: 1rem; color: var(--danger);">-${{ "{:,.0f}".format(ss.deductions if ss else 0) }}</td>
+                    <td style="padding: 1rem; font-weight: 700; color: var(--primary);">${{ "{:,.2f}".format(record.net_amount) }}</td>
+                    <td style="padding: 1rem;">
+                        <a href="{{ url_for('download_payslip', id=record.id) }}" class="btn glass" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem; text-decoration: none; color: white;">
+                           Download PDF
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No payroll records found for this period.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
