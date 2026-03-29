@@ -1,286 +1,288 @@
-from flask import render_template, redirect, url_for, request, flash, session
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from database import create_app
-from database import create_app
-from models import db, User, EmployeeProfile, Department, SalaryStructure, Attendance, LeaveRequest, PayrollRecord
-from ai_engine import analyze_payroll_data
-from payslip_gen import generate_payslip_pdf
-from flask import send_file, Response
+import os
 import io
-from werkzeug.security import check_password_hash
-from functools import wraps
+import uuid
+import time
 from datetime import datetime
+from functools import wraps
+from flask import Flask, render_template, redirect, url_for, request, flash, session, send_file, Response
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from sqlalchemy import text
+from sqlalchemy.dialects.postgresql import UUID
+from supabase import create_client, Client
+from werkzeug.security import check_password_hash
+from dotenv import load_dotenv
+from fpdf import FPDF
+from openai import OpenAI
 
-app = create_app()
-# Vercel needs the 'app' object to be accessible at the module level
-# For serverless, we handle DB check in app factory
-login_manager = LoginManager()
-login_manager.init_app(app)
+# Load environment variables
+load_dotenv()
+
+# --- Database & Models ---
+db = SQLAlchemy()
+
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    role = db.Column(db.String(20), nullable=False)
+    profile = db.relationship('EmployeeProfile', backref='user', uselist=False)
+
+class Department(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    employees = db.relationship('EmployeeProfile', backref='dept')
+
+class EmployeeProfile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
+    dept_id = db.Column(db.Integer, db.ForeignKey('department.id'))
+    job_title = db.Column(db.String(100))
+    joining_date = db.Column(db.DateTime, default=datetime.utcnow)
+    contact = db.Column(db.String(20))
+    address = db.Column(db.Text)
+    salary_structure = db.relationship('SalaryStructure', backref='profile', uselist=False)
+
+class SalaryStructure(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    profile_id = db.Column(db.Integer, db.ForeignKey('employee_profile.id'), nullable=False)
+    base_salary = db.Column(db.Float, default=0.0)
+    allowances = db.Column(db.Float, default=0.0)
+    deductions = db.Column(db.Float, default=0.0)
+
+class Attendance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+
+class LeaveRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    reason = db.Column(db.Text)
+    status = db.Column(db.String(20), default='Pending')
+
+class PayrollRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    net_amount = db.Column(db.Float, nullable=False)
+    paid_date = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='Paid')
+
+# --- Business Logic: AI Engine ---
+def analyze_payroll_data(db_session, user_prompt=None):
+    api_key = os.environ.get("AI_API_KEY")
+    total_payroll_count = db_session.query(PayrollRecord).count()
+    total_users = User.query.count()
+    pending_leaves = LeaveRequest.query.filter_by(status='Pending').count()
+    context = f"System State: {total_users} employees, {total_payroll_count} payroll records, {pending_leaves} pending leaves."
+    if not api_key:
+        return f"Offline: Query '{user_prompt}' received. Workforce: {total_users}." if user_prompt else "Analysis: Payroll within normal parameters."
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are an AI Payroll Consultant. Provide a single-sentence executive insight."},
+                {"role": "user", "content": f"{context}\n\nQuestion/Prompt: {user_prompt or 'General status insight'}"}
+            ],
+            max_tokens=80
+        )
+        return response.choices[0].message.content
+    except Exception as e: return f"AI Error: {str(e)}"
+
+# --- Business Logic: Payslip Generation ---
+class PayslipGenerator(FPDF):
+    def header(self):
+        self.set_font('helvetica', 'B', 20)
+        self.set_text_color(99, 102, 241)
+        self.cell(0, 10, 'Payroll DBMS', ln=True, align='L')
+        self.set_font('helvetica', '', 10)
+        self.set_text_color(100)
+        self.cell(0, 5, 'Executive Financial Document', ln=True, align='L')
+        self.ln(10)
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('helvetica', 'I', 8)
+        self.set_text_color(150)
+        self.cell(0, 10, f'Page {self.page_no()} | Generated by Payroll System', align='C')
+
+def generate_payslip_pdf(payroll_record):
+    pdf = PayslipGenerator()
+    pdf.add_page()
+    pdf.set_fill_color(248, 250, 252)
+    pdf.set_font('helvetica', 'B', 12)
+    pdf.cell(0, 10, 'Employee Details', ln=True, fill=True)
+    pdf.set_font('helvetica', '', 10)
+    pdf.cell(95, 7, f'Name: {payroll_record.user.name}', ln=False)
+    pdf.cell(95, 7, f'Email: {payroll_record.user.email}', ln=True)
+    pdf.cell(95, 7, f'Month/Year: {payroll_record.month}/{payroll_record.year}', ln=False)
+    job_title = payroll_record.user.profile.job_title if payroll_record.user.profile else "N/A"
+    pdf.cell(95, 7, f'Designation: {job_title}', ln=True)
+    pdf.ln(10)
+    pdf.set_font('helvetica', 'B', 12); pdf.cell(0, 10, 'Salary Breakdown', ln=True, fill=True)
+    pdf.set_font('helvetica', 'B', 10); pdf.cell(100, 10, 'Description', border=1); pdf.cell(90, 10, 'Amount (USD)', border=1, ln=True, align='R')
+    pdf.set_font('helvetica', '', 10)
+    ss = payroll_record.user.profile.salary_structure if payroll_record.user.profile else None
+    base, allowances, deductions = (ss.base_salary, ss.allowances, ss.deductions) if ss else (0, 0, 0)
+    pdf.cell(100, 10, 'Base Salary', border=1); pdf.cell(90, 10, f'${base:,.2f}', border=1, ln=True, align='R')
+    pdf.cell(100, 10, 'Allowances', border=1); pdf.cell(90, 10, f'${allowances:,.2f}', border=1, ln=True, align='R')
+    pdf.set_text_color(244, 63, 94); pdf.cell(100, 10, 'Deductions', border=1); pdf.cell(90, 10, f'-${deductions:,.2f}', border=1, ln=True, align='R')
+    pdf.set_text_color(0); pdf.set_font('helvetica', 'B', 12); pdf.cell(100, 12, 'NET PAYABLE', border=1); pdf.cell(90, 12, f'${payroll_record.net_amount:,.2f}', border=1, ln=True, align='R')
+    pdf.ln(20); pdf.set_font('helvetica', 'I', 10); pdf.multi_cell(0, 5, 'Computer-generated document. No signature required.')
+    return pdf.output()
+
+# --- App Initialization ---
+app = Flask(__name__)
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    if "sslmode" not in DATABASE_URL:
+        DATABASE_URL += ("&" if "?" in DATABASE_URL else "?") + "sslmode=require"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback_secret")
+
+db.init_app(app)
+login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+if SUPABASE_URL and SUPABASE_KEY:
+    app.supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+with app.app_context():
+    try:
+        if DATABASE_URL:
+            db.session.execute(text("SELECT 1"))
+            # Success: DB Connected
+    except Exception as e:
+        # Silent fail locally or log for production
+        pass
 
 @login_manager.user_loader
 def load_user(user_id):
     try:
-        # user_id is passed as a string (UUID)
         return User.query.get(user_id)
     except Exception:
         return None
 
-# RBAC Decorator
 def role_required(*roles):
     def decorator(f):
         @wraps(f)
         @login_required
         def decorated_function(*args, **kwargs):
             if current_user.role not in roles:
-                flash("You do not have permission to access this page.", "danger")
+                flash("Access Denied", "danger")
                 return redirect(url_for('dashboard'))
             return f(*args, **kwargs)
         return decorated_function
     return decorator
 
 # --- Routes ---
-
 @app.route('/')
 def index():
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    return redirect(url_for('dashboard')) if current_user.is_authenticated else redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
+        email, password = request.form.get('email'), request.form.get('password')
         try:
-            # Authenticate with Supabase
-            auth_response = app.supabase.auth.sign_in_with_password({"email": email, "password": password})
-            
-            if auth_response.user:
-                # Get the user from our local DB (synced via trigger)
+            auth = app.supabase.auth.sign_in_with_password({"email": email, "password": password})
+            if auth.user:
                 user = User.query.filter_by(email=email).first()
-                if user:
-                    login_user(user)
-                    return redirect(url_for('dashboard'))
-                else:
-                    flash('User record not found in database.', 'warning')
-        except Exception as e:
-            flash(f'Login failed: {str(e)}', 'danger')
-            
+                if user: login_user(user); return redirect(url_for('dashboard'))
+        except Exception: flash('Login failed', 'danger')
     return render_template('login.html')
 
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user()
-    return redirect(url_for('login'))
+    logout_user(); return redirect(url_for('login'))
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    from datetime import datetime
     now = datetime.now()
-    
-    # 📊 Fetch Real Statistics
     total_employees = User.query.filter_by(role='employee').count()
-    
-    # Calculate this month's payroll total
-    current_month_payroll = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(
-        PayrollRecord.month == now.month,
-        PayrollRecord.year == now.year
-    ).scalar() or 0.0
-    
+    current_payroll = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(PayrollRecord.month == now.month, PayrollRecord.year == now.year).scalar() or 0.0
     pending_leaves = LeaveRequest.query.filter_by(status='Pending').count()
-    
-    # Recent Activities (Last 5 records across tables)
-    # For now, we'll just pull the most recent payroll records as proxy for 'activity'
     recent_payroll = PayrollRecord.query.order_by(PayrollRecord.paid_date.desc()).limit(5).all()
-    
-    return render_template('dashboard.html', 
-                         user=current_user, 
-                         now=now,
-                         total_employees=total_employees,
-                         total_payroll=current_month_payroll,
-                         pending_leaves=pending_leaves,
-                         recent_activities=recent_payroll)
+    return render_template('dashboard.html', user=current_user, now=now, total_employees=total_employees, total_payroll=current_payroll, pending_leaves=pending_leaves, recent_activities=recent_payroll)
 
-# --- Admin Routes ---
 @app.route('/employees', methods=['GET', 'POST'])
 @role_required('admin', 'hr')
 def view_employees():
     if request.method == 'POST' and current_user.role == 'admin':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role = request.form.get('role')
-        dept_id = request.form.get('dept_id')
-        
+        name, email, password, role, dept_id = request.form.get('name'), request.form.get('email'), request.form.get('password'), request.form.get('role'), request.form.get('dept_id')
         try:
-            # Create user in Supabase Auth
-            # Note: This uses standard signUp. For admin-only creation without logout, 
-            # you usually use service_role, but for now we follow the user's Step 9 pattern.
-            auth_res = app.supabase.auth.sign_up({
-                "email": email,
-                "password": password,
-                "options": {
-                    "data": {"name": name}
-                }
-            })
-            
-            if auth_res.user:
-                # The trigger handle_new_user() in Postgres will auto-insert into public.users
-                # We just need to find it and update its role (or set role in metadata if trigger supports it)
-                # For now, we wait for trigger and then update the role if it's not default.
-                import time
-                time.sleep(1) # Give trigger a moment
-                user = User.query.filter_by(email=email).first()
+            auth = app.supabase.auth.sign_up({"email": email, "password": password, "options": {"data": {"name": name}}})
+            if auth.user:
+                time.sleep(1); user = User.query.filter_by(email=email).first()
                 if user:
                     user.role = role
-                    db.session.commit()
-
                     profile = EmployeeProfile(user_id=user.id, dept_id=dept_id, job_title=f"{role.capitalize()} Staff")
-                    db.session.add(profile)
-                    
-                    salary = SalaryStructure(profile_id=profile.id, base_salary=50000)
-                    db.session.add(salary)
-                    db.session.commit()
-                    
-                    flash(f"Employee {name} added successfully!", "success")
-                else:
-                    flash("User created in Auth but local record sync failed.", "warning")
-            return redirect(url_for('view_employees'))
-        except Exception as e:
-            flash(f"Error: {str(e)}", "danger")
+                    db.session.add(profile); db.session.flush()
+                    db.session.add(SalaryStructure(profile_id=profile.id, base_salary=50000))
+                    db.session.commit(); flash(f"Added {name}", "success")
+        except Exception: flash("Error adding employee", "danger")
+    return render_template('employees.html', employees=User.query.all(), departments=Department.query.all())
 
-    employees = User.query.all()
-    departments = Department.query.all()
-    return render_template('employees.html', employees=employees, departments=departments)
-
-# --- HR Routes ---
 @app.route('/attendance', methods=['GET', 'POST'])
 @role_required('hr', 'admin', 'employee')
 def view_attendance():
     if request.method == 'POST':
         try:
             if current_user.role == 'employee':
-                # Submit leave request
-                start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
-                end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
-                reason = request.form.get('reason')
-                
-                leave = LeaveRequest(user_id=current_user.id, start_date=start_date, end_date=end_date, reason=reason)
-                db.session.add(leave)
-                db.session.commit()
-                flash("Leave request submitted!", "success")
+                start, end = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date(), datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
+                db.session.add(LeaveRequest(user_id=current_user.id, start_date=start, end_date=end, reason=request.form.get('reason')))
+                db.session.commit(); flash("Submitted!", "success")
             elif current_user.role in ['hr', 'admin']:
-                # Approve/Reject leave
-                leave_id = request.form.get('leave_id')
-                action = request.form.get('action') # Approved, Rejected
-                leave = LeaveRequest.query.get(leave_id)
-                if leave:
-                    leave.status = action
-                    db.session.commit()
-                    flash(f"Leave {action.lower()}!", "success")
-        except Exception as e:
-            flash(f"Error processing request: {str(e)}", "danger")
-        return redirect(url_for('view_attendance'))
+                leave = LeaveRequest.query.get(request.form.get('leave_id'))
+                if leave: leave.status = request.form.get('action'); db.session.commit()
+        except Exception: flash("Error processing attendance", "danger")
+    pending = LeaveRequest.query.filter_by(status='Pending').all() if current_user.role in ['admin', 'hr'] else []
+    return render_template('attendance.html', pending_leaves=pending, my_leaves=LeaveRequest.query.filter_by(user_id=current_user.id).all())
 
-    if current_user.role in ['admin', 'hr']:
-        pending_leaves = LeaveRequest.query.filter_by(status='Pending').all()
-    else:
-        pending_leaves = []
-        
-    my_leaves = LeaveRequest.query.filter_by(user_id=current_user.id).all()
-    return render_template('attendance.html', pending_leaves=pending_leaves, my_leaves=my_leaves)
-
-# --- Accounting Routes ---
 @app.route('/payroll', methods=['GET', 'POST'])
 @role_required('accounting', 'admin')
 def view_payroll():
     if request.method == 'POST':
-        # Process payroll for a specific month/year
-        month = int(request.form.get('month'))
-        year = int(request.form.get('year'))
-        
-        # Check if already processed
-        exists = PayrollRecord.query.filter_by(month=month, year=year).first()
-        if exists:
-            flash("Payroll for this period already exists!", "warning")
-        else:
-            all_employees = EmployeeProfile.query.all()
-            for ep in all_employees:
-                ss = ep.salary_structure
-                net = (ss.base_salary + ss.allowances) - ss.deductions
-                record = PayrollRecord(
-                    user_id=ep.user_id,
-                    month=month,
-                    year=year,
-                    net_amount=net,
-                    status='Paid'
-                )
-                db.session.add(record)
-            db.session.commit()
-            flash(f"Payroll for {month}/{year} processed successfully!", "success")
-        return redirect(url_for('view_payroll'))
-
+        m, y = int(request.form.get('month')), int(request.form.get('year'))
+        if not PayrollRecord.query.filter_by(month=m, year=y).first():
+            for ep in EmployeeProfile.query.all():
+                ss = ep.salary_structure; net = (ss.base_salary + ss.allowances) - ss.deductions
+                db.session.add(PayrollRecord(user_id=ep.user_id, month=m, year=y, net_amount=net))
+            db.session.commit(); flash("Processed!", "success")
     records = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all()
-    
-    # Calculate Stats for the top cards
-    from datetime import datetime
     now = datetime.now()
-    total_payout = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(
-        PayrollRecord.month == now.month,
-        PayrollRecord.year == now.year
-    ).scalar() or 0.0
-    
-    # Mocking tax/bonus for now as they aren't explicit columns, 
-    # but could be derived from SalaryStructure if needed.
-    tax_est = total_payout * 0.15 
-    bonuses_est = total_payout * 0.05
+    payout = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(PayrollRecord.month == now.month, PayrollRecord.year == now.year).scalar() or 0.0
+    return render_template('payroll.html', records=records, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05)
 
-    return render_template('payroll.html', 
-                         records=records, 
-                         total_payout=total_payout,
-                         tax_est=tax_est,
-                         bonuses_est=bonuses_est)
-
-# --- AI API ---
 @app.route('/api/ai/analyze', methods=['GET', 'POST'])
 @login_required
 def ai_analyze():
     try:
-        user_prompt = None
-        if request.method == 'POST':
-            user_prompt = request.json.get('prompt')
-            
-        insight = analyze_payroll_data(db.session, user_prompt)
-        return {"insight": insight}
-    except Exception as e:
-        return {"insight": f"Analysis Error: {str(e)}"}, 500
+        prompt = request.json.get('prompt') if request.method == 'POST' else None
+        return {"insight": analyze_payroll_data(db.session, prompt)}
+    except Exception as e: return {"insight": f"Error: {str(e)}"}, 500
 
-# --- Payroll Documents ---
 @app.route('/payroll/download/<id>')
 @login_required
 def download_payslip(id):
-    record = PayrollRecord.query.get(id)
-    if not record:
-        flash("Record not found", "danger")
-        return redirect(url_for('dashboard'))
-    
-    # RLS Check: Employees can only download their OWN payslips
-    if current_user.role == 'employee' and record.user_id != current_user.id:
-        flash("Access Denied", "danger")
-        return redirect(url_for('dashboard'))
+    rec = PayrollRecord.query.get(id)
+    if not rec or (current_user.role == 'employee' and rec.user_id != current_user.id): return redirect(url_for('dashboard'))
+    return send_file(io.BytesIO(generate_payslip_pdf(rec)), mimetype='application/pdf', as_attachment=True, download_name=f'Payslip_{rec.month}_{rec.year}.pdf')
 
-    pdf_bytes = generate_payslip_pdf(record)
-    
-    return send_file(
-        io.BytesIO(pdf_bytes),
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=f'Payslip_{record.month}_{record.year}.pdf'
-    )
-
+# Development entry point
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=False)
