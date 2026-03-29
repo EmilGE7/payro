@@ -202,6 +202,10 @@ def role_required(*roles):
     return decorator
 
 # --- Routes ---
+@app.errorhandler(404)
+def not_found(e):
+    return redirect(url_for('login'))
+
 @app.route('/')
 def index():
     return redirect(url_for('dashboard')) if current_user.is_authenticated else redirect(url_for('login'))
