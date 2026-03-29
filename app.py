@@ -217,8 +217,9 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and user.password == password:
             login_user(user)
+            session['user_id'] = str(user.id)
             return redirect(url_for('dashboard'))
-        flash('Invalid email or password', 'danger')
+        return render_template('login.html', error="Invalid credentials")
     return render_template('login.html')
 
 @app.route('/logout')
