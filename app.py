@@ -140,15 +140,30 @@ def generate_payslip_pdf(payroll_record):
 # --- App Initialization ---
 app = Flask(__name__)
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
 if DATABASE_URL:
+    # Force the correct driver (psycopg2) and standardize the prefix
     if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+    elif DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+    
+    # Ensure sslmode=require is present in the URL if not already specified
     if "sslmode" not in DATABASE_URL:
         DATABASE_URL += ("&" if "?" in DATABASE_URL else "?") + "sslmode=require"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback_secret")
+
+# Production-grade engine options for connection stability
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_pre_ping": True,
+    "connect_args": {
+        "sslmode": "require",
+        "connect_timeout": 10
+    }
+}
 
 db.init_app(app)
 login_manager = LoginManager(app)
