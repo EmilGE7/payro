@@ -73,6 +73,7 @@ class PayrollRecord(db.Model):
     net_amount = db.Column(db.Float, nullable=False)
     paid_date = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(20), default='Paid')
+    user = db.relationship('User', backref='payroll_records', lazy=True)
 
 # --- Business Logic: AI Engine ---
 def analyze_payroll_data(db_session, user_prompt=None):
