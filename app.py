@@ -13,6 +13,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from fpdf import FPDF
 from openai import OpenAI
+from flask_caching import Cache
 
 # Load environment variables
 load_dotenv()
@@ -165,15 +166,15 @@ app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback_secret")
 
 # Production-grade engine options for connection stability
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "pool_pre_ping": True,
+    "pool_size": 3,
+    "max_overflow": 2,
+    "pool_timeout": 20,
     "pool_recycle": 300,
-    "connect_args": {
-        "sslmode": "require",
-        "connect_timeout": 15
-    }
+    "pool_pre_ping": True,
 }
 
 db.init_app(app)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -187,7 +188,7 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     try:
-        return User.query.get(user_id)
+        return db.session.get(User, user_id)
     except Exception:
         return None
 
@@ -219,7 +220,6 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            session['user_id'] = str(user.id)
             return redirect(url_for('dashboard'))
         return render_template('login.html', error="Invalid credentials")
     return render_template('login.html')
@@ -231,6 +231,7 @@ def logout():
 
 @app.route('/dashboard')
 @login_required
+@cache.cached(timeout=30)
 def dashboard():
     now = datetime.now()
     total_employees = User.query.filter_by(role='employee').count()

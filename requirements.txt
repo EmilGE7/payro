@@ -7,3 +7,4 @@ openai
 fpdf2
 gunicorn
 supabase
+flask-caching
