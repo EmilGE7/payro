@@ -17,36 +17,44 @@ def seed_db():
             dept_objects[name] = dept
         db.session.commit()
 
-        # 2. Create Admin User
-        admin_email = 'admin@payroll.com'
-        admin = User.query.filter_by(email=admin_email).first()
-        if not admin:
-            admin = User(
-                name='System Admin',
-                email=admin_email,
-                password=generate_password_hash('admin123'),
-                role='admin'
-            )
-            db.session.add(admin)
-            db.session.commit()
-            print(f"Added Admin User: {admin_email}")
+        # 2. Create Test Users for all Roles
+        users_to_create = [
+            {'email': 'admin@payroll.com', 'name': 'System Admin', 'role': 'admin', 'password': 'admin123', 'dept': 'Executive', 'title': 'Chief Administrator', 'salary': 120000},
+            {'email': 'hr@payroll.com', 'name': 'HR Manager', 'role': 'hr', 'password': 'hr123', 'dept': 'HR', 'title': 'HR Director', 'salary': 85000},
+            {'email': 'accounting@payroll.com', 'name': 'Chief Accountant', 'role': 'accounting', 'password': 'finance123', 'dept': 'Finance', 'title': 'Head of Finance', 'salary': 90000},
+            {'email': 'employee@payroll.com', 'name': 'John Doe', 'role': 'employee', 'password': 'user123', 'dept': 'IT', 'title': 'Software Engineer', 'salary': 75000}
+        ]
 
-            # Create profile for admin
-            profile = EmployeeProfile(
-                user_id=admin.id,
-                dept_id=dept_objects['Executive'].id,
-                job_title='Chief Administrator'
-            )
-            db.session.add(profile)
-            db.session.commit()
-            
-            db.session.add(SalaryStructure(profile_id=profile.id, base_salary=100000))
-            db.session.commit()
+        print("\nCreating accounts...")
+        for user_data in users_to_create:
+            user = User.query.filter_by(email=user_data['email']).first()
+            if not user:
+                user = User(
+                    name=user_data['name'],
+                    email=user_data['email'],
+                    password=generate_password_hash(user_data['password']),
+                    role=user_data['role']
+                )
+                db.session.add(user)
+                db.session.flush()
+                
+                profile = EmployeeProfile(
+                    user_id=user.id,
+                    dept_id=dept_objects[user_data['dept']].id,
+                    job_title=user_data['title']
+                )
+                db.session.add(profile)
+                db.session.flush()
 
+                db.session.add(SalaryStructure(profile_id=profile.id, base_salary=user_data['salary']))
+                print(f"Added {user_data['role'].upper()}: {user_data['email']}")
+
+        db.session.commit()
         print("\n✅ Database Seeded Successfully!")
-        print(f"\n🚀 LOGIN CREDENTIALS:")
-        print(f"Email: {admin_email}")
-        print(f"Password: admin123")
+        print(f"\n🚀 TEST LOGIN CREDENTIALS:")
+        for user_data in users_to_create:
+            print(f"- {user_data['role'].upper()}: {user_data['email']} | Pass: {user_data['password']}")
+
 
 if __name__ == "__main__":
     seed_db()
