@@ -64,6 +64,7 @@ class LeaveRequest(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     reason = db.Column(db.Text)
     status = db.Column(db.String(20), default='Pending')
+    user = db.relationship('User', backref='leave_requests')
 
 class PayrollRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
