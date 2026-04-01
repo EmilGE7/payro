@@ -235,7 +235,7 @@ def dashboard():
     total_employees = User.query.filter_by(role='employee').count()
     current_payroll = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(PayrollRecord.month == now.month, PayrollRecord.year == now.year).scalar() or 0.0
     pending_leaves = LeaveRequest.query.filter_by(status='Pending').count()
-    recent_payroll = PayrollRecord.query.order_by(PayrollRecord.paid_date.desc()).limit(5).all()
+    recent_payroll = PayrollRecord.query.filter(PayrollRecord.paid_date != None).order_by(PayrollRecord.paid_date.desc()).limit(5).all()
     return render_template('dashboard.html', user=current_user, now=now, total_employees=total_employees, total_payroll=current_payroll, pending_leaves=pending_leaves, recent_activities=recent_payroll)
 
 @app.route('/employees', methods=['GET', 'POST'])

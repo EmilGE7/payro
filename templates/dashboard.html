@@ -86,7 +86,7 @@
                     <td style="padding: 1rem;">{{ act.month }}/{{ act.year }}</td>
                     <td style="padding: 1rem; font-weight: 700;">${{ "{:,.2f}".format(act.net_amount) }}</td>
                     <td style="padding: 1rem;"><span class="glass" style="padding: 0.25rem 0.75rem; font-size: 0.65rem; background: rgba(16, 185, 129, 0.1); color: var(--success);">{{ act.status }}</span></td>
-                    <td style="padding: 1rem; color: var(--text-secondary); font-size: 0.875rem;">{{ act.paid_date.strftime('%Y-%m-%d') }}</td>
+                    <td style="padding: 1rem; color: var(--text-secondary); font-size: 0.875rem;">{{ act.paid_date.strftime('%Y-%m-%d') if act.paid_date else '—' }}</td>
                     <td style="padding: 1rem;">
                         <a href="{{ url_for('download_payslip', id=act.id) }}" style="text-decoration: none; font-size: 1.25rem; color: var(--primary); transition: var(--transition);">⬇</a>
                     </td>
