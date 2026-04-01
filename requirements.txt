@@ -8,3 +8,7 @@ fpdf2
 gunicorn
 supabase
 flask-caching
+anthropic
+weasyprint
+openpyxl
+apscheduler

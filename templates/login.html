@@ -2,23 +2,45 @@
 {% block title %}Login{% endblock %}
 
 {% block auth_content %}
-<div class="auth-container">
-    <div class="auth-card glass shadow-premium">
-        <h1 class="logo" style="text-align: center; margin-bottom: 2rem;">Sign In</h1>
-        <form action="{{ url_for('login') }}" method="POST">
-            <div class="input-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+<div class="login-split">
+    <div class="login-brand">
+        <h1 style="font-size: 4rem; font-weight: 900; letter-spacing: -0.05em; margin-bottom: 1rem;">Payro</h1>
+        <p style="font-size: 1.5rem; opacity: 0.8; margin-bottom: 3rem;">Payroll, simplified.</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; font-weight: 500;">
+                <span style="color: var(--primary);">✦</span> Smart Payroll Processing
             </div>
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <div style="display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; font-weight: 500;">
+                <span style="color: var(--secondary);">✦</span> Autonomous Leave Tracking
             </div>
-            <button type="submit" class="btn btn-primary">Login to Dashboard</button>
-        </form>
-        <div style="margin-top: 2rem; padding: 1rem; font-size: 0.8rem; color: var(--text-secondary); border-top: 1px solid var(--glass-border);">
-            <p><strong>Local Auth Enabled</strong></p>
-            <p>Use your account credentials to log in.</p>
+            <div style="display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; font-weight: 500;">
+                <span style="color: var(--warning);">✦</span> Generative AI Insights
+            </div>
+        </div>
+    </div>
+    <div class="login-form-side">
+        <div class="glass shadow-premium" style="width: 100%; max-width: 400px; padding: 3rem; background: rgba(255,255,255,0.02); animation: fadeInUp 0.5s ease-out;">
+            <div style="text-align: center; margin-bottom: 2.5rem;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">Payro</div>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Secure Access Portal</p>
+            </div>
+
+            <form action="{{ url_for('login') }}" method="POST">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block;">Email Address</label>
+                    <input type="email" name="email" placeholder="name@company.com" required style="width: 100%; padding: 0.8rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <label style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block;">Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required style="width: 100%; padding: 0.8rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding: 1rem; font-size: 1rem;">Sign in to Dashboard</button>
+            </form>
+
+            <div style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
+                Managed by Enterprise DBMS Core
+            </div>
         </div>
     </div>
 </div>

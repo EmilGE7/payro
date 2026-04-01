@@ -2,38 +2,38 @@
 {% block title %}Executive Dashboard{% endblock %}
 
 {% block content %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
     <div>
         <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.025em;">Welcome, {{ user.name }}</h1>
         <p style="color: var(--text-secondary); font-size: 1rem;">Organization intelligence at a glance.</p>
     </div>
-    <div class="glass" style="padding: 0.75rem 1.5rem; font-size: 0.875rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
-        <span style="color: var(--primary);">●</span> {{ now.strftime('%B %d, %Y') }}
-    </div>
 </header>
 
 <div class="grid-stats">
-    <div class="stat-card glass shadow-premium">
+    <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--primary);">
         <div class="stat-label">Total Workforce</div>
-        <div class="stat-value">{{ total_employees }}</div>
+        <div class="stat-value"><span data-countup="{{ total_employees }}">0</span></div>
         <div style="color: var(--success); font-size: 0.75rem; font-weight: 600;">Active Employees</div>
     </div>
-    <div class="stat-card glass shadow-premium">
+    <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--secondary);">
         <div class="stat-label">Monthly Expenditure</div>
-        <div class="stat-value">${{ "{:,.2f}".format(total_payroll) }}</div>
+        <div class="stat-value">$<span data-countup="{{ total_payroll }}">0</span></div>
         <div style="color: var(--text-secondary); font-size: 0.75rem;">Budget Utilization</div>
     </div>
-    <div class="stat-card glass shadow-premium">
+    <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--warning);">
         <div class="stat-label">Pending Actions</div>
-        <div class="stat-value">{{ pending_leaves }}</div>
+        <div class="stat-value"><span data-countup="{{ pending_leaves }}">0</span></div>
         <div style="color: var(--warning); font-size: 0.75rem; font-weight: 600;">Leave Requests</div>
     </div>
     <div class="stat-card glass shadow-premium ai-card pulse">
-        <div class="stat-label" style="color: var(--text-primary);">AI Insights</div>
-        <div class="stat-value" style="font-size: 1.25rem; margin: 1rem 0;">Ready to Analyze</div>
-        <button class="btn" style="background: white; color: black; font-size: 0.75rem; padding: 0.4rem;" onclick="analyzeAI()">Run Analysis</button>
+        <div class="stat-label" style="color: var(--text-primary);">AI Monthly Insights</div>
+        <div id="ai-narrative-box" style="font-size: 0.85rem; margin: 1rem 0; line-height: 1.4; min-height: 3em;">
+            <p style="opacity: 0.6;">Ready to generate monthly narrative...</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem;" onclick="generateAINarrative()">Generate Report ✦</button>
+            <a id="download-report-btn" href="/ai/monthly-report/pdf" class="btn glass" style="display: none; font-size: 0.75rem; padding: 0.4rem; width: auto; color: white; text-decoration: none;">PDF</a>
+        </div>
     </div>
 </div>
 
@@ -41,108 +41,67 @@
     <div class="glass" style="padding: 2rem;">
         <h2 style="font-size: 1.25rem; margin-bottom: 2rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem;">
             <span style="width: 8px; height: 24px; background: var(--primary); border-radius: 4px;"></span>
-            Payroll Distribution
+            Recent Transactions
         </h2>
-        <canvas id="payrollChart" style="max-height: 300px;"></canvas>
+        <div style="overflow-x: auto;">
+            <table class="payro-table">
+                <thead>
+                    <tr>
+                        <th>EMPLOYEE</th>
+                        <th>MONTH</th>
+                        <th>AMOUNT</th>
+                        <th>STATUS</th>
+                        <th>DATE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for act in recent_activities %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ act.user.name }}</td>
+                        <td>{{ act.month }}/{{ act.year }}</td>
+                        <td style="font-weight: 700;">${{ "{:,.2f}".format(act.net_amount) }}</td>
+                        <td><span class="badge badge-success">{{ act.status }}</span></td>
+                        <td style="color: var(--text-secondary);">{{ act.paid_date.strftime('%Y-%m-%d') if act.paid_date else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     
     <div class="glass" style="padding: 2rem;">
-        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 700;">Quick Actions</h2>
+        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 700;">System Hub</h2>
         <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <a href="{{ url_for('view_employees') }}" class="btn glass" style="text-align: left; text-decoration: none; color: white; display: flex; align-items: center; gap: 0.75rem;">
-                <span style="opacity: 0.5;">+</span> Add Employee
+            <a href="{{ url_for('view_employees') }}" class="nav-link glass" style="justify-content: flex-start; gap: 0.75rem;">
+                <span>+</span> Add Employee
             </a>
-            <a href="{{ url_for('view_payroll') }}" class="btn glass" style="text-align: left; text-decoration: none; color: white; display: flex; align-items: center; gap: 0.75rem;">
-                <span style="opacity: 0.5;">$</span> Process Payroll
+            <a href="{{ url_for('view_payroll') }}" class="nav-link glass" style="justify-content: flex-start; gap: 0.75rem;">
+                <span>$</span> Process Payroll
             </a>
-            <a href="{{ url_for('view_attendance') }}" class="btn glass" style="text-align: left; text-decoration: none; color: white; display: flex; align-items: center; gap: 0.75rem;">
-                <span style="opacity: 0.5;">✓</span> Approve Leaves
+            <a href="{{ url_for('view_attendance') }}" class="nav-link glass" style="justify-content: flex-start; gap: 0.75rem;">
+                <span>✓</span> Approve Leaves
+            </a>
+            <a href="/export/payroll" class="nav-link glass" style="justify-content: flex-start; gap: 0.75rem;">
+                <span>📄</span> Export Payroll (Excel)
             </a>
         </div>
     </div>
 </div>
 
-<div class="glass" style="padding: 2rem;">
-    <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 700;">Recent Transactions</h2>
-    <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="text-align: left; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 0.875rem;">
-                    <th style="padding: 1rem;">EMPLOYEE</th>
-                    <th style="padding: 1rem;">MONTH/YEAR</th>
-                    <th style="padding: 1rem;">AMOUNT</th>
-                    <th style="padding: 1rem;">STATUS</th>
-                    <th style="padding: 1rem;">DATE</th>
-                    <th style="padding: 1rem;">SLIP</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for act in recent_activities %}
-                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.03); transition: var(--transition);">
-                    <td style="padding: 1rem;">
-                        <div style="font-weight: 600;">{{ act.user.name }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ act.user.email }}</div>
-                    </td>
-                    <td style="padding: 1rem;">{{ act.month }}/{{ act.year }}</td>
-                    <td style="padding: 1rem; font-weight: 700;">${{ "{:,.2f}".format(act.net_amount) }}</td>
-                    <td style="padding: 1rem;"><span class="glass" style="padding: 0.25rem 0.75rem; font-size: 0.65rem; background: rgba(16, 185, 129, 0.1); color: var(--success);">{{ act.status }}</span></td>
-                    <td style="padding: 1rem; color: var(--text-secondary); font-size: 0.875rem;">{{ act.paid_date.strftime('%Y-%m-%d') if act.paid_date else '—' }}</td>
-                    <td style="padding: 1rem;">
-                        <a href="{{ url_for('download_payslip', id=act.id) }}" style="text-decoration: none; font-size: 1.25rem; color: var(--primary); transition: var(--transition);">⬇</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
 <script>
-const ctx = document.getElementById('payrollChart').getContext('2d');
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-            label: 'Monthly Payroll ($)',
-            data: [42000, 45000, 44000, 48000, 52000, {{ total_payroll }}],
-            borderColor: '#6366f1',
-            backgroundColor: 'rgba(99, 102, 241, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 3,
-            pointBackgroundColor: '#fff',
-            pointBorderColor: '#6366f1',
-            pointRadius: 4
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-        }
-    }
-});
-
-function analyzeAI() {
-    const btn = document.querySelector('.ai-card button');
-    btn.innerText = 'Analyzing...';
-    btn.disabled = true;
+async function generateAINarrative() {
+    const box = document.getElementById('ai-narrative-box');
+    const dlBtn = document.getElementById('download-report-btn');
+    box.innerHTML = '<div class="skeleton" style="height: 60px; width: 100%;"></div>';
     
-    fetch('/api/ai/analyze')
-        .then(res => res.json())
-        .then(data => {
-            alert("AI Insight: " + data.insight);
-            btn.innerText = 'Run Analysis';
-            btn.disabled = false;
-        })
-        .catch(err => {
-            console.error(err);
-            btn.innerText = 'Run Analysis';
-            btn.disabled = false;
-        });
+    try {
+        const res = await fetch('/ai/monthly-report');
+        const data = await res.json();
+        box.innerHTML = `<p style="animation: fadeInUp 0.5s ease-out;">${data.narrative}</p>`;
+        dlBtn.style.display = 'block';
+    } catch (e) {
+        box.innerHTML = '<p style="color: var(--danger);">Failed to generate report.</p>';
+    }
 }
 </script>
 {% endblock %}
