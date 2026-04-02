@@ -336,7 +336,10 @@ def view_payroll():
         m, y = int(request.form.get('month')), int(request.form.get('year'))
         if not PayrollRecord.query.filter_by(month=m, year=y).first():
             for ep in EmployeeProfile.query.all():
-                ss = ep.salary_structure; net = (ss.base_salary + ss.allowances) - ss.deductions
+                ss = ep.salary_structure
+                if ss is None:
+                    continue
+                net = (ss.base_salary or 0) + (ss.allowances or 0) - (ss.deductions or 0)
                 db.session.add(PayrollRecord(user_id=ep.user_id, month=m, year=y, net_amount=net))
             db.session.commit()
     records = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all()
