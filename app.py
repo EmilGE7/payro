@@ -245,7 +245,11 @@ def not_found(e):
 
 @app.route('/')
 def index():
-    return redirect(url_for('dashboard')) if current_user.is_authenticated else redirect(url_for('login'))
+    if current_user.is_authenticated:
+        if current_user.role == 'employee':
+            return redirect(url_for('view_employee_profile', id=current_user.id))
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -255,6 +259,8 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
+            if user.role == 'employee':
+                return redirect(url_for('view_employee_profile', id=user.id))
             return redirect(url_for('dashboard'))
         return render_template('login.html', error="Invalid credentials")
     return render_template('login.html')
@@ -269,6 +275,8 @@ def logout():
 @login_required
 @cache.cached(timeout=30)
 def dashboard():
+    if current_user.role == 'employee':
+        return redirect(url_for('view_employee_profile', id=current_user.id))
     now = datetime.now()
     total_employees = User.query.filter_by(role='employee').count()
     latest_pr = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).first()
