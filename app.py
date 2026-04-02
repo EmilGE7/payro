@@ -508,7 +508,7 @@ def export_payroll():
     for col, h in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=h); cell.font = header_font; cell.fill = header_fill
     for row, rec in enumerate(PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all(), 2):
-        ws.cell(row=row, column=1, value=rec.user.name); ws.cell(row=row, column=2, value=rec.user.email); ws.cell(row=row, column=3, value=rec.month)
+        ws.cell(row=row, column=1, value=rec.user.name if rec.user else "N/A"); ws.cell(row=row, column=2, value=rec.user.email if rec.user else "N/A"); ws.cell(row=row, column=3, value=rec.month)
         ws.cell(row=row, column=4, value=rec.year); ws.cell(row=row, column=5, value=round(rec.net_amount, 2)); ws.cell(row=row, column=6, value=rec.status)
         ws.cell(row=row, column=7, value=str(rec.paid_date.date()) if rec.paid_date else "N/A")
     for col in ws.columns: ws.column_dimensions[col[0].column_letter].width = 16
