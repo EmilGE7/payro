@@ -8,30 +8,36 @@
         <p style="color: var(--text-secondary);">Salary processing and organization disbursements.</p>
     </div>
     <div style="display: flex; gap: 1rem;">
-        <a href="/export/payroll" class="btn glass" style="width: auto; padding: 0.75rem 1.5rem; color: white; text-decoration: none;">📄 Export Payroll (Excel)</a>
-        <button class="btn btn-primary" style="width: auto; padding: 0.75rem 1.5rem;" onclick="location.reload()">Refresh Records</button>
+        <a href="{{ url_for('export_payroll') }}" class="btn glass" 
+            style="width:auto; padding:0.75rem 1.5rem; text-decoration:none; color:white; font-size:0.875rem;">
+            📄 Export Payroll (Excel)
+        </a>
+        <button class="btn btn-primary" style="width: auto; padding: 0.75rem 1.5rem;" onclick="document.getElementById('processModal').style.display='flex'">Process Monthly Payroll</button>
     </div>
 </header>
 
 <div class="grid-stats">
     <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--primary);">
         <div class="stat-label">Total Monthly Payout</div>
-        <div class="stat-value">$<span data-countup="{{ total_payout }}">0</span></div>
+        <div class="stat-value" data-countup="{{ total_payout|int }}" data-prefix="$">0</div>
     </div>
     <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--secondary);">
         <div class="stat-label">Estimated Tax Burden</div>
-        <div class="stat-value">$<span data-countup="{{ tax_est }}">0</span></div>
+        <div class="stat-value" data-countup="{{ tax_est|int }}" data-prefix="$">0</div>
     </div>
     <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--warning);">
         <div class="stat-label">Bonuses Issued</div>
-        <div class="stat-value">$<span data-countup="{{ bonuses_est }}">0</span></div>
+        <div class="stat-value" data-countup="{{ bonuses_est|int }}" data-prefix="$">0</div>
     </div>
 </div>
 
 <div class="glass" style="padding: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <h2 style="font-size: 1.25rem; font-weight: 700;">Salary History & Logs</h2>
-        <input type="text" id="pay-search" placeholder="Search employee..." style="width: 250px; padding: 0.5rem 1rem; font-size: 0.85rem;" onkeyup="filterPayTable()">
+        <input type="text" id="pay-search" placeholder="🔍 Search employee/period..." 
+            style="max-width:300px; padding:0.65rem 1rem; background:rgba(255,255,255,0.05); 
+            border:1px solid var(--glass-border); border-radius:0.5rem; color:white; width:100%; outline:none;" 
+            onkeyup="filterPayTable()">
     </div>
     
     <div style="overflow-x: auto;">
@@ -39,41 +45,67 @@
             <thead>
                 <tr>
                     <th>EMPLOYEE/DATE</th>
-                    <th>GROSS SALARY</th>
-                    <th>ALLW / DEDUCT</th>
                     <th>NET DISBURSEMENT</th>
-                    <th>AI EXPLAINER</th>
+                    <th>COMPONENTS</th>
+                    <th>STATUS</th>
                     <th>DOCUMENTS</th>
                 </tr>
             </thead>
             <tbody>
                 {% for record in records %}
-                <tr>
+                <tr class="pay-row" data-searchable="{{ record.user.name }} {{ record.month }}/{{ record.year }}">
                     <td>
                         <div style="font-weight: 600;">{{ record.user.name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">Period: {{ record.month }}/{{ record.year }}</div>
                     </td>
-                    {% set ss = record.user.profile.salary_structure if record.user.profile else None %}
-                    <td style="font-weight: 500;">${{ "{:,.0f}".format(ss.base_salary if ss else 0) }}</td>
+                    <td style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">${{ "{:,.2f}".format(record.net_amount) }}</td>
                     <td>
-                        <span style="color: var(--success);">+${{ "{:,.0f}".format(ss.allowances if ss else 0) }}</span> / 
-                        <span style="color: var(--danger);">-${{ "{:,.0f}".format(ss.deductions if ss else 0) }}</span>
-                    </td>
-                    <td style="font-weight: 800; color: var(--primary);">${{ "{:,.2f}".format(record.net_amount) }}</td>
-                    <td>
-                        <button class="btn glass" style="padding: 0.25rem 0.5rem; font-size: 0.7rem; width: auto; color: white;" onclick="explainPay({{ record.id }})">Explain Components ✧</button>
+                        <button class="btn glass" 
+                            style="width:auto; padding:0.4rem 0.8rem; font-size:0.75rem; color:white;" 
+                            onclick="explainPay({{ record.id }})">Explain Components ✦</button>
                     </td>
                     <td>
-                        <a href="{{ url_for('download_payslip', id=record.id) }}" class="badge badge-success" style="text-decoration: none;">DOWNLOAD PDF</a>
+                        <span class="badge badge-success">● {{ record.status }}</span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('download_payslip', id=record.id) }}" 
+                            class="badge badge-info" style="text-decoration: none;">⬇ DOWNLOAD PDF</a>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" style="padding: 4rem; text-align: center; color: var(--text-secondary);">No financial records found.</td>
+                    <td colspan="5" style="padding: 4rem; text-align: center; color: var(--text-secondary);">No financial records found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+    
+    <div id="pagination" style="display:flex; justify-content:center; gap:0.5rem; margin-top:2rem;"></div>
+</div>
+
+<!-- Process Modal -->
+<div id="processModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark);">
+        <h2 style="margin-bottom: 1.5rem;">Process Monthly Payroll</h2>
+        <form action="{{ url_for('view_payroll') }}" method="POST">
+            <div class="input-group">
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Select Month</label>
+                <select name="month" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                    {% for m in range(1, 13) %}<option value="{{ m }}" {{ 'selected' if m == now.month }}>{{ m }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="input-group" style="margin-bottom: 2rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Select Year</label>
+                <select name="year" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                    {% for y in range(2023, 2026) %}<option value="{{ y }}" {{ 'selected' if y == now.year }}>{{ y }}</option>{% endfor %}
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" onclick="this.textContent='⏳ Processing...';">Execute Disbursement</button>
+                <button type="button" class="btn glass" onclick="document.getElementById('processModal').style.display='none'">Cancel</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -82,7 +114,7 @@
     <div class="glass" style="width: 500px; padding: 2.5rem; background: var(--bg-dark);">
         <h2 style="margin-bottom: 0.5rem; color: var(--primary);">AI Payslip Breakdown</h2>
         <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Generative Analysis of Salary Components</p>
-        <div id="ai-explanation" style="font-size: 0.95rem; line-height: 1.6; min-height: 100px; margin-bottom: 2rem;">
+        <div id="ai-explanation" style="font-size: 0.95rem; line-height: 1.6; min-height: 100px; margin-bottom: 2rem; color: var(--text-primary);">
             <div class="skeleton" style="height: 120px; width: 100%;"></div>
         </div>
         <button class="btn btn-primary" onclick="document.getElementById('explainModal').style.display='none'">Dismiss</button>
@@ -90,32 +122,63 @@
 </div>
 
 <script>
-function filterPayTable() {
-    const input = document.getElementById('pay-search');
-    const filter = input.value.toUpperCase();
-    const tr = document.getElementById('pay-table').getElementsByTagName('tr');
+// Count-up animation
+document.querySelectorAll('[data-countup]').forEach(el => {
+    const target = +el.dataset.countup;
+    const prefix = el.dataset.prefix || '';
+    let current = 0;
+    const step = Math.max(target / 50, 1);
+    const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = prefix + Math.floor(current).toLocaleString('en-IN');
+        if (current >= target) clearInterval(timer);
+    }, 25);
+});
 
-    for (let i = 1; i < tr.length; i++) {
-        const td = tr[i].getElementsByTagName('td')[0];
-        if (td) {
-            const txtValue = td.textContent || td.innerText;
-            tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
-        }
-    }
+// Search & Pagination Logic
+function filterPayTable() {
+    const q = document.getElementById('pay-search').value.toLowerCase();
+    document.querySelectorAll('.pay-row').forEach(row => {
+        row.style.display = row.dataset.searchable.toLowerCase().includes(q) ? '' : 'none';
+    });
 }
 
-async function explainPay(id) {
+async function explainPay(ids) {
     document.getElementById('explainModal').style.display = 'flex';
     const box = document.getElementById('ai-explanation');
-    box.innerHTML = '<div class="skeleton" style="height: 120px; width: 100%;"></div>';
+    box.innerHTML = '<div style="opacity:0.5; font-size:0.8rem;">✦ AI is analyzing components...</div>';
     
     try {
-        const res = await fetch(`/ai/explain-payslip/${id}`);
+        const res = await fetch(`/ai/explain-payslip/${ids}`);
         const data = await res.json();
-        box.innerHTML = `<p style="animation: fadeInUp 0.5s ease-out;">${data.explanation}</p>`;
+        box.textContent = data.explanation || 'Explanation unavailable.';
     } catch (e) {
-        box.innerHTML = '<span style="color: var(--danger);">Failed to generate explanation.</span>';
+        box.textContent = 'Service unavailable. Try again later.';
     }
 }
+
+// Simple client-side pagination
+document.addEventListener('DOMContentLoaded', () => {
+    const rows = Array.from(document.querySelectorAll('.pay-row'));
+    const perPage = 10;
+    const numPages = Math.ceil(rows.length / perPage);
+    const pagin = document.getElementById('pagination');
+    
+    if(numPages <= 1) return;
+    
+    for(let i=1; i<=numPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'btn glass';
+        btn.style.width = '35px'; btn.style.padding = '0.5rem';
+        btn.onclick = () => {
+            rows.forEach((r, idx) => r.style.display = (idx >= (i-1)*perPage && idx < i*perPage) ? '' : 'none');
+            document.querySelectorAll('#pagination button').forEach(b => b.style.borderColor = 'var(--glass-border)');
+            btn.style.borderColor = 'var(--primary)';
+        };
+        pagin.appendChild(btn);
+    }
+    pagin.firstChild.click();
+});
 </script>
 {% endblock %}

@@ -2,14 +2,9 @@
 {% block title %}Attendance & Leaves{% endblock %}
 
 {% block content %}
-<header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <h1 style="font-size: 1.875rem; font-weight: 700;">Attendance & Leave Management</h1>
-        <p style="color: var(--text-secondary);">Track organization time-off and coverage impact.</p>
-    </div>
-    {% if current_user.role == 'employee' %}
-    <button class="btn btn-primary" onclick="document.getElementById('leaveModal').style.display='flex'" style="width: auto; padding: 0.75rem 1.5rem;">Request Time Off</button>
-    {% endif %}
+<header style="margin-bottom: 2.5rem;">
+    <h1 style="font-size: 1.875rem; font-weight: 700;">Attendance & Leave Management</h1>
+    <p style="color: var(--text-secondary);">Track organization time-off and coverage impact.</p>
 </header>
 
 <div class="glass" style="padding: 2rem;">
@@ -25,7 +20,6 @@
                     <th>REASON</th>
                     <th>STATUS</th>
                     {% if current_user.role in ['admin', 'hr'] %}
-                    <th>AI IMPACT ANALYSIS</th>
                     <th>ACTIONS</th>
                     {% endif %}
                 </tr>
@@ -38,27 +32,22 @@
                         <div style="font-weight: 600;">{{ leave.user.name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ leave.user.role|upper }}</div>
                     </td>
-                    <td style="font-size: 0.85rem;">
-                        {{ leave.start_date }} to {{ leave.end_date }}
-                    </td>
-                    <td style="color: var(--text-secondary); font-style: italic; font-size: 0.85rem;">
-                        "{{ leave.reason }}"
-                    </td>
+                    <td>{{ leave.start_date }} to {{ leave.end_date }}</td>
+                    <td style="color: var(--text-secondary); font-size: 0.85rem;">"{{ leave.reason }}"</td>
                     <td>
-                        <span class="badge {{ 'badge-success' if leave.status == 'Approved' else 'badge-warning' if leave.status == 'Pending' else 'badge-danger' }}">
+                        <span class="badge {% if leave.status == 'Approved' %}badge-success{% elif leave.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}">
                             {{ leave.status }}
                         </span>
+                        
+                        {% if current_user.role in ['admin', 'hr'] and leave.status == 'Pending' %}
+                        <div id="impact-{{ leave.id }}" 
+                            style="margin-top:0.75rem; padding:0.75rem; border-radius:0.5rem; 
+                            background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.15); 
+                            font-size:0.8rem; color:var(--text-secondary); line-height:1.6; display:none;">
+                        </div>
+                        {% endif %}
                     </td>
                     {% if current_user.role in ['admin', 'hr'] %}
-                    <td style="max-width: 300px;">
-                        <div id="impact-{{ leave.id }}" style="font-size: 0.75rem; line-height: 1.4; color: var(--text-secondary);">
-                            {% if leave.status == 'Pending' %}
-                            <button class="btn glass" style="padding: 0.25rem 0.5rem; font-size: 0.7rem; width: auto; color: white;" onclick="getLeaveImpact({{ leave.id }})">Analyze Coverage ✧</button>
-                            {% else %}
-                            <span style="opacity: 0.5;">Analysis final.</span>
-                            {% endif %}
-                        </div>
-                    </td>
                     <td>
                         {% if leave.status == 'Pending' %}
                         <form action="{{ url_for('view_attendance') }}" method="POST" style="display: flex; gap: 0.5rem;">
@@ -72,7 +61,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" style="padding: 4rem; text-align: center; color: var(--text-secondary);">No leave records found.</td>
+                    <td colspan="5" style="padding: 3rem; text-align: center; color: var(--text-secondary);">No leave records found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -81,22 +70,28 @@
 </div>
 
 {% if current_user.role == 'employee' %}
+<div class="glass" style="margin-top: 2rem; padding: 2rem; text-align: center;">
+    <h3 style="margin-bottom: 1rem;">Request Time Off</h3>
+    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Apply for leave or report an absence.</p>
+    <button class="btn btn-primary" style="width: auto; padding: 0.75rem 2rem;" onclick="document.getElementById('leaveModal').style.display='flex'">New Leave Request</button>
+</div>
+
 <!-- Request Leave Modal -->
 <div id="leaveModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
     <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark);">
         <h2 style="margin-bottom: 1.5rem;">Request Time Off</h2>
         <form action="{{ url_for('view_attendance') }}" method="POST">
-            <div class="input-group" style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Start Date</label>
-                <input type="date" name="start_date" required style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+            <div class="input-group">
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Start Date</label>
+                <input type="date" name="start_date" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
             </div>
-            <div class="input-group" style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">End Date</label>
-                <input type="date" name="end_date" required style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+            <div class="input-group">
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">End Date</label>
+                <input type="date" name="end_date" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
             </div>
-            <div class="input-group" style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Reason</label>
-                <textarea name="reason" rows="3" required style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; resize: none;"></textarea>
+            <div class="input-group" style="margin-bottom: 2rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Reason</label>
+                <textarea name="reason" rows="3" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; resize: none;"></textarea>
             </div>
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" class="btn btn-primary">Submit Request</button>
@@ -108,17 +103,20 @@
 {% endif %}
 
 <script>
-async function getLeaveImpact(id) {
-    const el = document.getElementById(`impact-${id}`);
-    el.innerHTML = '<div class="skeleton" style="height: 40px; width: 100%;"></div>';
-    
-    try {
-        const res = await fetch(`/ai/leave-impact/${id}`);
-        const data = await res.json();
-        el.innerHTML = `<p style="animation: fadeInUp 0.4s ease-out; color: var(--text-primary); font-weight: 500;">${data.impact}</p>`;
-    } catch (e) {
-        el.innerHTML = '<span style="color: var(--danger);">Analysis unavailable.</span>';
-    }
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const leaveIds = [{% for leave in pending_leaves %}{{ leave.id }}{% if not loop.last %},{% endif %}{% endfor %}];
+    leaveIds.forEach(id => {
+        fetch(`/ai/leave-impact/${id}`)
+            .then(r => r.json())
+            .then(data => {
+                const el = document.getElementById(`impact-${id}`);
+                if (el && data.impact) {
+                    el.textContent = '✦ ' + data.impact;
+                    el.style.display = 'block';
+                }
+            })
+            .catch(() => {});
+    });
+});
 </script>
 {% endblock %}

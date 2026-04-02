@@ -14,30 +14,41 @@ from dotenv import load_dotenv
 from fpdf import FPDF
 from openai import OpenAI
 from flask_caching import Cache
-import anthropic
 import json
-from openpyxl import Workbook
-from weasyprint import HTML
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
 
 # Load environment variables
 load_dotenv()
 
-# --- AI Integration: Anthropic ---
-_anthropic_client = anthropic.Anthropic(
-    api_key=os.environ.get("ANTHROPIC_API_KEY")
-)
+# --- Shared OpenAI Helper ---
+_openai_client = None
 
-def ask_claude(system_prompt: str, user_content: str) -> str:
+def get_openai_client():
+    global _openai_client
+    if _openai_client is None:
+        key = os.environ.get("AI_API_KEY") # Shared OpenAI Key
+        if key:
+            _openai_client = OpenAI(api_key=key)
+    return _openai_client
+
+def ask_openai(system_prompt: str, user_content: str) -> str:
+    """Shared helper for all OpenAI features. Returns empty string on error."""
+    client = get_openai_client()
+    if not client:
+        return ""
     try:
-        msg = _anthropic_client.messages.create(
-            model="claude-3-5-sonnet-20240620", # Using current best as opus-4-5 is placeholder
-            max_tokens=1024,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_content}]
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content}
+            ],
+            max_tokens=1024
         )
-        return msg.content[0].text
-    except Exception as e:
-        return f"AI Error: {str(e)}"
+        return response.choices[0].message.content
+    except Exception:
+        return ""
 
 # --- Database & Models ---
 db = SQLAlchemy()
@@ -123,7 +134,7 @@ def analyze_payroll_data(db_session, user_prompt=None):
     if not api_key:
         return f"Offline: Query '{user_prompt}' received. Workforce: {total_users}." if user_prompt else "Analysis: Payroll within normal parameters."
     try:
-        client = OpenAI(api_key=api_key)
+        client = get_openai_client()
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -181,26 +192,22 @@ app = Flask(__name__)
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
-    # Force the correct driver (psycopg2) and standardize the prefix
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
-    
-    # Ensure sslmode=require is present in the URL if not already specified
     if "sslmode" not in DATABASE_URL:
         DATABASE_URL += ("&" if "?" in DATABASE_URL else "?") + "sslmode=require"
-    
-    # Supabase connection pooler fix: keepalives and idle timeout
     DATABASE_URL = DATABASE_URL + "&keepalives=1&keepalives_idle=30"
-
-print("USING DB:", DATABASE_URL)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback_secret")
 
-# Production-grade engine options for connection stability
+# Security: Harden SECRET_KEY
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
+if app.config['SECRET_KEY'] is None:
+    raise RuntimeError("SECRET_KEY environment variable is not set. Refusing to start.")
+
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_size": 3,
     "max_overflow": 2,
@@ -214,19 +221,10 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-with app.app_context():
-    try:
-        if DATABASE_URL:
-            db.session.execute(text("SELECT 1"))
-    except Exception as e:
-        pass
-
 @login_manager.user_loader
 def load_user(user_id):
-    try:
-        return db.session.get(User, user_id)
-    except Exception:
-        return None
+    try: return db.session.get(User, user_id)
+    except Exception: return None
 
 def role_required(*roles):
     def decorator(f):
@@ -252,7 +250,8 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email, password = request.form.get('email'), request.form.get('password')
+        email = request.form.get('email')
+        password = request.form.get('password')
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
@@ -263,7 +262,8 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user(); return redirect(url_for('login'))
+    logout_user()
+    return redirect(url_for('login'))
 
 @app.route('/dashboard')
 @login_required
@@ -285,34 +285,33 @@ def view_employees():
             hashed_password = generate_password_hash(password)
             user = User(name=name, email=email, password=hashed_password, role=role)
             db.session.add(user)
-            db.session.flush() # To get user.id for profile
-            
+            db.session.flush()
             profile = EmployeeProfile(user_id=user.id, dept_id=dept_id, job_title=f"{role.capitalize()} Staff")
             db.session.add(profile)
             db.session.flush()
-            
-            db.session.add(SalaryStructure(profile_id=profile.id, base_salary=50000))
-            db.session.add(Notification(user_id=user.id, message=f"Welcome to Payro! Your account has been created."))
+            db.session.add(SalaryStructure(profile_id=profile.id, base_salary=5000))
+            db.session.add(Notification(user_id=user.id, message="Welcome to Payro!"))
             db.session.commit()
             flash(f"Added {name}", "success")
-        except Exception as e: 
+        except Exception as e:
             db.session.rollback()
-            flash(f"Error adding employee: {str(e)}", "danger")
+            flash(f"Error: {str(e)}", "danger")
     return render_template('employees.html', employees=User.query.all(), departments=Department.query.all())
 
 @app.route('/attendance', methods=['GET', 'POST'])
-@role_required('hr', 'admin', 'employee')
+@login_required
 def view_attendance():
     if request.method == 'POST':
         try:
             if current_user.role == 'employee':
-                start, end = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date(), datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
+                start = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
+                end = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
                 db.session.add(LeaveRequest(user_id=current_user.id, start_date=start, end_date=end, reason=request.form.get('reason')))
                 db.session.commit(); flash("Submitted!", "success")
             elif current_user.role in ['hr', 'admin']:
                 leave = LeaveRequest.query.get(request.form.get('leave_id'))
                 if leave: leave.status = request.form.get('action'); db.session.commit()
-        except Exception: flash("Error processing attendance", "danger")
+        except Exception: flash("Error!", "danger")
     pending = LeaveRequest.query.filter_by(status='Pending').all() if current_user.role in ['admin', 'hr'] else []
     return render_template('attendance.html', pending_leaves=pending, my_leaves=LeaveRequest.query.filter_by(user_id=current_user.id).all())
 
@@ -325,10 +324,9 @@ def view_payroll():
             for ep in EmployeeProfile.query.all():
                 ss = ep.salary_structure; net = (ss.base_salary + ss.allowances) - ss.deductions
                 db.session.add(PayrollRecord(user_id=ep.user_id, month=m, year=y, net_amount=net))
-            db.session.commit(); flash("Processed!", "success")
+            db.session.commit()
     records = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all()
-    now = datetime.now()
-    payout = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(PayrollRecord.month == now.month, PayrollRecord.year == now.year).scalar() or 0.0
+    payout = sum(r.net_amount for r in records if r.month == datetime.now().month)
     return render_template('payroll.html', records=records, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05)
 
 @app.route('/api/ai/analyze', methods=['GET', 'POST'])
@@ -346,107 +344,142 @@ def download_payslip(id):
     if not rec or (current_user.role == 'employee' and rec.user_id != current_user.id): return redirect(url_for('dashboard'))
     return send_file(io.BytesIO(generate_payslip_pdf(rec)), mimetype='application/pdf', as_attachment=True, download_name=f'Payslip_{rec.month}_{rec.year}.pdf')
 
-# --- New Overhaul Routes ---
+# --- Antigravity Overhaul (OpenAI Edition) ---
 
-@app.route('/notifications/mark-read', methods=['POST'])
+@app.route('/ai/monthly-report')
 @login_required
-def mark_notifications_read():
-    Notification.query.filter_by(user_id=current_user.id).update({'is_read': True})
-    db.session.commit()
-    return {"status": "success"}
+def ai_monthly_report():
+    try:
+        now = datetime.now(); month_name = now.strftime('%B')
+        total_payroll = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(PayrollRecord.month == now.month, PayrollRecord.year == now.year).scalar() or 0
+        employee_count = User.query.filter_by(role='employee').count()
+        paid_count = PayrollRecord.query.filter_by(month=now.month, year=now.year, status='Paid').count()
+        leaves_approved = LeaveRequest.query.filter_by(status='Approved').count()
+        leaves_pending = LeaveRequest.query.filter_by(status='Pending').count()
+        leaves_rejected = LeaveRequest.query.filter_by(status='Rejected').count()
+        
+        from datetime import timedelta
+        sixty_days_ago = (now - timedelta(days=60)).date()
+        no_leave_names = [emp.name for emp in User.query.filter_by(role='employee').all() if not LeaveRequest.query.filter(LeaveRequest.user_id == emp.id, LeaveRequest.status == 'Approved', LeaveRequest.start_date >= sixty_days_ago).first()]
+        
+        data = {"month": month_name, "year": now.year, "total_payroll_usd": round(total_payroll, 2), "total_employees": employee_count, "employees_paid_this_month": paid_count, "leave_requests": {"approved": leaves_approved, "pending": leaves_pending, "rejected": leaves_rejected}, "employees_no_leave_60_days": no_leave_names[:5]}
+        system = "You are an HR analytics assistant for a company using Payro. Write a concise, professional monthly HR narrative in exactly 3-4 sentences. Focus on payroll cost, leave trends, and any risk signals. Write in plain business English. No bullet points. No markdown. Never invent data — use only the numbers provided. End with one forward-looking sentence."
+        narrative = ask_openai(system, f"Generate HR narrative: {json.dumps(data)}")
+        if not narrative: narrative = f"In {month_name} {now.year}, {employee_count} employees were on payroll with a total payout of ${total_payroll:,.2f}. There are {leaves_pending} pending leave requests."
+        session['last_narrative'] = narrative; session['last_narrative_month'] = f"{month_name} {now.year}"
+        return {"narrative": narrative, "month": f"{month_name} {now.year}"}
+    except Exception: return {"error": "AI service temporarily unavailable"}, 503
+
+@app.route('/ai/monthly-report/pdf')
+@login_required
+def ai_monthly_report_pdf():
+    narrative = session.get('last_narrative'); month = session.get('last_narrative_month', 'Report')
+    if not narrative: return redirect(url_for('dashboard'))
+    pdf = FPDF(); pdf.add_page(); pdf.set_font('helvetica', 'B', 20); pdf.set_text_color(99, 102, 241); pdf.cell(0, 12, 'Payro — HR Monthly Report', ln=True)
+    pdf.set_font('helvetica', '', 11); pdf.set_text_color(100); pdf.cell(0, 7, month, ln=True); pdf.ln(10)
+    pdf.set_font('helvetica', '', 12); pdf.set_text_color(30, 30, 30); pdf.multi_cell(0, 8, narrative); pdf.ln(15)
+    pdf.set_font('helvetica', 'I', 9); pdf.set_text_color(150); pdf.cell(0, 5, f'Generated by Payro AI on {datetime.now().strftime("%Y-%m-%d %H:%M")}', ln=True)
+    return send_file(io.BytesIO(pdf.output()), mimetype='application/pdf', as_attachment=True, download_name=f'payro-hr-report-{month.replace(" ", "-")}.pdf')
+
+@app.route('/ai/explain-payslip/<int:payroll_id>')
+@login_required
+def ai_explain_payslip(payroll_id):
+    try:
+        rec = PayrollRecord.query.get(payroll_id)
+        if not rec or (current_user.role == 'employee' and rec.user_id != current_user.id): return {"error": "Unauthorized"}, 403
+        ss = rec.user.profile.salary_structure if rec.user.profile else None
+        base = ss.base_salary if ss else rec.net_amount * 0.6; alw = ss.allowances if ss else rec.net_amount * 0.2; ded = ss.deductions if ss else rec.net_amount * 0.1
+        pf = round(base * 0.12, 2); tds = round(max(0, (base * 12 - 250000) * 0.05 / 12), 2)
+        breakdown = {"employee_name": rec.user.name, "month_year": f"{rec.month}/{rec.year}", "gross_salary": round(base + alw, 2), "basic_salary": round(base, 2), "allowances": round(alw, 2), "pf_deduction": pf, "tds_deduction": tds, "other_deductions": round(max(0, ded - pf - tds), 2), "net_salary": round(rec.net_amount, 2), "currency": "USD"}
+        system = "You are a friendly HR assistant explaining an employee's payslip in plain, simple English. Write 2-3 sentences total. Explain what each main component means in everyday language. Be warm, clear, and helpful. Never use financial jargon without explaining it. Do not use bullet points."
+        explanation = ask_openai(system, f"Explain this payslip to the employee: {json.dumps(breakdown)}")
+        if not explanation: explanation = f"Your gross pay this month was ${breakdown['gross_salary']:,.2f}, which includes your base salary of ${breakdown['basic_salary']:,.2f} plus allowances. After deductions your net take-home is ${breakdown['net_salary']:,.2f}."
+        return {"explanation": explanation, "breakdown": breakdown}
+    except Exception: return {"error": "AI service temporarily unavailable"}, 503
+
+@app.route('/ai/leave-impact/<int:leave_id>')
+@login_required
+def ai_leave_impact(leave_id):
+    try:
+        if current_user.role not in ['admin', 'hr']: return {"error": "Unauthorized"}, 403
+        leave = LeaveRequest.query.get(leave_id)
+        if not leave: return {"error": "Leave not found"}, 404
+        delta = (leave.end_date - leave.start_date).days + 1
+        leaves_this_year = LeaveRequest.query.filter(LeaveRequest.user_id == leave.user_id, LeaveRequest.status == 'Approved', db.extract('year', LeaveRequest.start_date) == datetime.now().year).count()
+        last_leave = LeaveRequest.query.filter(LeaveRequest.user_id == leave.user_id, LeaveRequest.status == 'Approved').order_by(LeaveRequest.end_date.desc()).first()
+        days_since_last = (datetime.now().date() - last_leave.end_date).days if last_leave else None
+        overlapping = LeaveRequest.query.filter(LeaveRequest.user_id != leave.user_id, LeaveRequest.status == 'Approved', LeaveRequest.start_date <= leave.end_date, LeaveRequest.end_date >= leave.start_date).count()
+        context = {"employee_name": leave.user.name, "leave_start": str(leave.start_date), "leave_end": str(leave.end_date), "leave_duration_days": delta, "reason": leave.reason or "Not specified", "leaves_taken_this_year": leaves_this_year, "remaining_annual_leaves": max(0, 24 - leaves_this_year), "days_since_last_approved_leave": days_since_last, "other_employees_on_leave_same_dates": overlapping}
+        system = "You are an HR decision assistant. Given a leave request and employee context, write a 2-3 sentence impact summary for the manager. Be factual, neutral, and helpful. Mention team coverage issues if overlapping leaves exist, attendance impact, and leave balance. End with exactly one sentence starting with 'Recommendation:'"
+        impact = ask_openai(system, f"Leave request context: {json.dumps(context)}")
+        if not impact: impact = f"{leave.user.name} has taken {leaves_this_year} leaves this year. {overlapping} other employee(s) overlap on these dates. Recommendation: Review team coverage before approving."
+        return {"impact": impact}
+    except Exception: return {"error": "AI service temporarily unavailable"}, 503
+
+_burnout_cache = {}
+@app.route('/api/burnout-scores')
+@login_required
+def api_burnout_scores():
+    try:
+        global _burnout_cache; now = datetime.now()
+        if _burnout_cache.get('timestamp') and (now - _burnout_cache['timestamp']).seconds / 3600 < 24: return {"scores": _burnout_cache['data']}
+        from datetime import timedelta; sixty_days_ago = (now - timedelta(days=60)).date()
+        employees = User.query.filter_by(role='employee').all(); at_risk_batch = []; all_scores = {}
+        for emp in employees:
+            leaves_this_year = LeaveRequest.query.filter(LeaveRequest.user_id == emp.id, LeaveRequest.status == 'Approved', db.extract('year', LeaveRequest.start_date) == now.year).count()
+            last_leave = LeaveRequest.query.filter(LeaveRequest.user_id == emp.id, LeaveRequest.status == 'Approved').order_by(LeaveRequest.end_date.desc()).first()
+            days_since = (now.date() - last_leave.end_date).days if last_leave else None
+            all_scores[str(emp.id)] = {"employee_id": str(emp.id), "risk_level": "healthy", "reason": "Regular leave pattern observed."}
+            if (days_since is None or days_since > 60) or leaves_this_year < 3:
+                at_risk_batch.append({"employee_id": str(emp.id), "name": emp.name, "leaves_taken_this_year": leaves_this_year, "days_since_last_leave": days_since})
+        if at_risk_batch:
+            system = "You are an HR wellness analyst. For each employee, return ONLY a valid JSON array. Each item must have exactly: employee_id (string), risk_level (one of: healthy, watch, at_risk), reason (one sentence, max 10 words). Return raw JSON array ONLY. No markdown. No explanation. No preamble."
+            raw = ask_openai(system, f"Assess these employees: {json.dumps(at_risk_batch)}")
+            if raw:
+                try:
+                    ai_scores = json.loads(raw.strip().lstrip('```json').lstrip('```').rstrip('```').strip())
+                    for score in ai_scores:
+                        eid = str(score.get('employee_id', ''))
+                        if eid in all_scores: all_scores[eid] = score
+                except Exception: pass
+        result = list(all_scores.values()); _burnout_cache = {'data': result, 'timestamp': now}
+        return {"scores": result}
+    except Exception: return {"error": "AI service temporarily unavailable"}, 503
+
+# --- Export Routes ---
 
 @app.route('/export/employees')
 @role_required('admin', 'hr')
 def export_employees():
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Employees"
-    headers = ["Name", "Email", "Role", "Department", "Joining Date"]
-    ws.append(headers)
-    for user in User.query.all():
-        dept = user.profile.dept.name if user.profile and user.profile.dept else "N/A"
-        ws.append([user.name, user.email, user.role.upper(), dept, user.profile.joining_date.strftime('%Y-%m-%d') if user.profile else "N/A"])
-    out = io.BytesIO()
-    wb.save(out)
-    out.seek(0)
-    return send_file(out, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='Employees.xlsx')
+    wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Employees"
+    header_font = Font(bold=True, color="FFFFFF"); header_fill = PatternFill("solid", fgColor="6366F1")
+    headers = ["ID", "Name", "Email", "Role", "Department", "Job Title", "Joining Date", "Contact"]
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h); cell.font = header_font; cell.fill = header_fill; cell.alignment = Alignment(horizontal='center')
+    for row, emp in enumerate(User.query.all(), 2):
+        p = emp.profile
+        ws.cell(row=row, column=1, value=str(emp.id)[:8]); ws.cell(row=row, column=2, value=emp.name); ws.cell(row=row, column=3, value=emp.email)
+        ws.cell(row=row, column=4, value=emp.role); ws.cell(row=row, column=5, value=p.dept.name if p and p.dept else "N/A")
+        ws.cell(row=row, column=6, value=p.job_title if p else "N/A"); ws.cell(row=row, column=7, value=str(p.joining_date.date()) if p and p.joining_date else "N/A"); ws.cell(row=row, column=8, value=p.contact if p else "N/A")
+    for col in ws.columns: ws.column_dimensions[col[0].column_letter].width = 18
+    output = io.BytesIO(); wb.save(output); output.seek(0)
+    return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='payro-employees.xlsx')
 
 @app.route('/export/payroll')
 @role_required('admin', 'accounting')
 def export_payroll():
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Payroll"
-    ws.append(["Employee", "Month", "Year", "Net Amount", "Status", "Paid Date"])
-    for rec in PayrollRecord.query.all():
-        ws.append([rec.user.name, rec.month, rec.year, rec.net_amount, rec.status, rec.paid_date.strftime('%Y-%m-%d') if rec.paid_date else "—"])
-    out = io.BytesIO()
-    wb.save(out)
-    out.seek(0)
-    return send_file(out, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='Payroll.xlsx')
-
-@app.route('/ai/monthly-report')
-@role_required('admin', 'hr')
-def ai_monthly_report():
-    now = datetime.now()
-    count = PayrollRecord.query.filter_by(month=now.month, year=now.year).count()
-    total = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter_by(month=now.month, year=now.year).scalar() or 0.0
-    pending = LeaveRequest.query.filter_by(status='Pending').count()
-    data = {"employee_count": User.query.count(), "total_payroll": total, "processed_count": count, "pending_leaves": pending, "month": now.strftime('%B %Y')}
-    
-    system = "You are an HR analytics assistant. Write a concise, professional 3-4 sentence narrative report. Format specifically as plain English."
-    user = f"Monthly data: {json.dumps(data)}"
-    narrative = ask_claude(system, user)
-    session['last_report'] = {"narrative": narrative, "month": now.strftime('%B %Y')}
-    return {"narrative": narrative, "month": now.strftime('%B %Y')}
-
-@app.route('/ai/monthly-report/pdf')
-@role_required('admin', 'hr')
-def ai_report_pdf():
-    report = session.get('last_report')
-    if not report: return "No report found", 404
-    html = f"<html><body style='font-family: sans-serif; padding: 2rem;'><h1 style='color: #6366f1;'>HR Monthly Insight: {report['month']}</h1><p style='line-height: 1.6; color: #333;'>{report['narrative']}</p></body></html>"
-    out = io.BytesIO()
-    HTML(string=html).write_pdf(out)
-    out.seek(0)
-    return send_file(out, mimetype='application/pdf', as_attachment=True, download_name=f'HR_Report_{report["month"]}.pdf')
-
-@app.route('/ai/explain-payslip/<int:id>')
-@login_required
-def ai_explain_payslip(id):
-    rec = PayrollRecord.query.get(id)
-    if not rec or (current_user.role == 'employee' and rec.user_id != current_user.id): return {"error": "Unauthorized"}, 403
-    breakdown = {"name": rec.user.name, "month": rec.month, "year": rec.year, "net": rec.net_amount}
-    system = "You are a friendly HR assistant. Explain a payslip component breakdown simply."
-    explanation = ask_claude(system, f"Payslip Data: {json.dumps(breakdown)}")
-    return {"explanation": explanation}
-
-@app.route('/ai/leave-impact/<int:id>')
-@role_required('admin', 'hr')
-def ai_leave_impact(id):
-    leave = LeaveRequest.query.get(id)
-    if not leave: return {"error": "Not found"}, 404
-    context = {"employee": leave.user.name, "reason": leave.reason, "dates": f"{leave.start_date} to {leave.end_date}"}
-    system = "Analyze leave impact on team coverage concisely. Recommend Approve/Reject at end."
-    impact = ask_claude(system, json.dumps(context))
-    return {"impact": impact}
-
-@cache.memoize(timeout=86400) # 24h cache as requested
-@app.route('/api/burnout-scores')
-@role_required('admin', 'hr')
-def ai_burnout_scores():
-    employees = User.query.filter_by(role='employee').all()
-    at_risk = []
-    for emp in employees:
-        last = LeaveRequest.query.filter_by(user_id=emp.id, status='Approved').order_by(LeaveRequest.end_date.desc()).first()
-        days_since = (datetime.now().date() - last.end_date).days if last else 999
-        if days_since > 60: at_risk.append({"id": str(emp.id), "name": emp.name, "days": days_since})
-    
-    if not at_risk: return []
-    system = "Analyze burnout risk. Return ONLY a JSON array with: employee_id (int), risk_level (healthy/watch/at_risk), reason (string <12 words)."
-    scores_raw = ask_claude(system, json.dumps(at_risk))
-    try: return json.loads(scores_raw) # Claude returns JSON array as requested
-    except: return []
+    wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Payroll Records"
+    header_font = Font(bold=True, color="FFFFFF"); header_fill = PatternFill("solid", fgColor="6366F1")
+    headers = ["Employee", "Email", "Month", "Year", "Net Amount", "Status", "Paid Date"]
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h); cell.font = header_font; cell.fill = header_fill
+    for row, rec in enumerate(PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all(), 2):
+        ws.cell(row=row, column=1, value=rec.user.name); ws.cell(row=row, column=2, value=rec.user.email); ws.cell(row=row, column=3, value=rec.month)
+        ws.cell(row=row, column=4, value=rec.year); ws.cell(row=row, column=5, value=round(rec.net_amount, 2)); ws.cell(row=row, column=6, value=rec.status)
+        ws.cell(row=row, column=7, value=str(rec.paid_date.date()) if rec.paid_date else "N/A")
+    for col in ws.columns: ws.column_dimensions[col[0].column_letter].width = 16
+    output = io.BytesIO(); wb.save(output); output.seek(0)
+    return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='payro-payroll.xlsx')
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,23 +11,30 @@
 <body>
     {% if current_user.is_authenticated %}
     <nav class="sidebar glass">
-        <div class="logo" style="margin-bottom: 2rem; font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Payro</div>
+        <div class="logo" style="margin-bottom: 2rem;">Payro</div>
         
-        <div class="nav-label">Overview</div>
-        <a href="{{ url_for('dashboard') }}" class="nav-link {{ 'active' if request.path == url_for('dashboard') }}">Dashboard</a>
-        
-        <div class="nav-label">People</div>
-        {% if current_user.role in ['admin', 'hr'] %}
-        <a href="{{ url_for('view_employees') }}" class="nav-link {{ 'active' if request.path == url_for('view_employees') }}">Employees</a>
-        {% endif %}
-        <a href="{{ url_for('view_attendance') }}" class="nav-link {{ 'active' if request.path == url_for('view_attendance') }}">Attendance</a>
-        
-        <div class="nav-label">Finance</div>
-        <a href="{{ url_for('view_payroll') }}" class="nav-link {{ 'active' if request.path == url_for('view_payroll') }}">Payroll</a>
+        <button id="theme-toggle" style="background:none; border:1px solid var(--glass-border); border-radius:0.5rem; padding:0.4rem 0.75rem; color:var(--text-secondary); cursor:pointer; font-size:0.8rem; margin-bottom:1.5rem; transition:var(--transition);">🌙 Dark</button>
+
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="{{ url_for('dashboard') }}" class="nav-link {{ 'active' if request.path == url_for('dashboard') else '' }}">📊 Dashboard</a>
+            </li>
+            {% if current_user.role in ['admin', 'hr'] %}
+            <li class="nav-item">
+                <a href="{{ url_for('view_employees') }}" class="nav-link {{ 'active' if request.path == url_for('view_employees') else '' }}">👥 Employees</a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+                <a href="{{ url_for('view_attendance') }}" class="nav-link {{ 'active' if request.path == url_for('view_attendance') else '' }}">📅 Attendance</a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('view_payroll') }}" class="nav-link {{ 'active' if request.path == url_for('view_payroll') else '' }}">💰 Payroll</a>
+            </li>
+        </ul>
 
         <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--glass-border);">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
-                <div id="user-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: white;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: white;">
                     {{ current_user.name[:1]|upper }}
                 </div>
                 <div>
@@ -41,59 +48,36 @@
         </div>
     </nav>
     
-    <main style="margin-left: 280px; padding: 2rem; width: calc(100% - 280px); flex-grow: 1;">
-        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
-            <button id="theme-toggle" class="glass" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 1.2rem;">🌙</button>
-            <div style="position: relative;">
-                <button class="glass" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 1.2rem;">🔔</button>
-                <span style="position: absolute; top: 0; right: 0; width: 12px; height: 12px; background: var(--danger); border-radius: 50%; border: 2px solid var(--bg-dark);"></span>
-            </div>
-        </div>
-
+    <main class="main-content">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="glass" style="padding: 1rem 1.5rem; margin-bottom: 2rem; border-left: 4px solid var(--{{ category if category != 'message' else 'primary' }}); transition: var(--transition);">
+                    <div class="badge badge-{{ category if category != 'message' else 'primary' }}" style="padding: 1rem; margin-bottom: 2rem; border-radius: 0.5rem; width: 100%;">
                         {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
         {% block content %}{% endblock %}
     </main>
 
     <script>
-        // Theme Toggle
-        const themeToggle = document.getElementById('theme-toggle');
-        const setHeaderTheme = (theme) => {
-            document.documentElement.setAttribute('data-theme', theme);
-            themeToggle.innerText = theme === 'dark' ? '🌙' : '☀️';
-            localStorage.setItem('theme', theme);
-        };
-        
-        if (localStorage.getItem('theme') === 'light') setHeaderTheme('light');
-        
-        themeToggle.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            setHeaderTheme(current === 'dark' ? 'light' : 'dark');
+    const toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+        if (localStorage.getItem('payro-theme') === 'light') {
+            document.documentElement.classList.add('light-mode');
+            toggle.textContent = '☀️ Light';
+        }
+        toggle.addEventListener('click', () => {
+            const isLight = document.documentElement.classList.toggle('light-mode');
+            localStorage.setItem('payro-theme', isLight ? 'light' : 'dark');
+            toggle.textContent = isLight ? '☀️ Light' : '🌙 Dark';
         });
-
-        // Count-up logic
-        document.querySelectorAll('[data-countup]').forEach(el => {
-            const target = +el.dataset.countup;
-            let current = 0;
-            const step = target / 40;
-            const timer = setInterval(() => {
-                current = Math.min(current + step, target);
-                el.textContent = Math.floor(current).toLocaleString();
-                if (current >= target) clearInterval(timer);
-            }, 30);
-        });
+    }
     </script>
     {% else %}
-        <div style="width: 100%;">
-            {% block auth_content %}{% endblock %}
-        </div>
+        {% block auth_content %}{% endblock %}
     {% endif %}
 </body>
 </html>

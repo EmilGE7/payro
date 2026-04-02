@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Employee Workforce{% endblock %}
+{% block title %}Workforce Management{% endblock %}
 
 {% block content %}
 <header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
@@ -8,21 +8,23 @@
         <p style="color: var(--text-secondary);">View and manage organization members.</p>
     </div>
     <div style="display: flex; gap: 1rem;">
-        <a href="/export/employees" class="btn glass" style="width: auto; padding: 0.75rem 1.5rem; color: white; text-decoration: none;">⬇ Export Excel</a>
+        <a href="{{ url_for('export_employees') }}" class="btn glass" 
+            style="width:auto; padding:0.75rem 1.5rem; text-decoration:none; color:white; font-size:0.875rem;">
+            ⬇ Export Excel
+        </a>
         {% if current_user.role == 'admin' %}
         <button class="btn btn-primary" onclick="document.getElementById('addModal').style.display='flex'" style="width: auto; padding: 0.75rem 1.5rem;">Add New Employee</button>
         {% endif %}
     </div>
 </header>
 
+<div style="margin-bottom:1.5rem;">
+    <input type="text" id="emp-search" placeholder="🔍 Search by name, email, role..." 
+        style="max-width:400px; padding:0.65rem 1rem; background:rgba(255,255,255,0.05); 
+        border:1px solid var(--glass-border); border-radius:0.5rem; color:white; width:100%; outline:none;">
+</div>
+
 <div class="glass" style="padding: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 700;">Employee Roster</h2>
-        <div id="burnout-status" style="font-size: 0.75rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
-            <button class="btn glass" style="padding: 0.25rem 0.5rem; font-size: 0.7rem; width: auto; color: white;" onclick="checkBurnout()">Check Burnout Risk ✦</button>
-        </div>
-    </div>
-    
     <div style="overflow-x: auto;">
         <table class="payro-table">
             <thead>
@@ -31,28 +33,25 @@
                     <th>ROLE</th>
                     <th>DEPARTMENT</th>
                     <th>STATUS</th>
-                    <th>WELLNESS (AI)</th>
                     <th>ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
                 {% for emp in employees %}
-                <tr>
+                <tr data-employee-id="{{ emp.id }}" data-searchable="{{ emp.name }} {{ emp.email }} {{ emp.role }} {{ emp.profile.dept.name if emp.profile and emp.profile.dept else '' }}">
                     <td>
                         <div style="font-weight: 600;">{{ emp.name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ emp.email }}</div>
                     </td>
-                    <td><span class="badge" style="background: rgba(255,255,255,0.05);">{{ emp.role|upper }}</span></td>
+                    <td><span class="badge badge-info">{{ emp.role|upper }}</span></td>
                     <td>{{ emp.profile.dept.name if emp.profile and emp.profile.dept else 'Unassigned' }}</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                    <td>
-                        <div id="burnout-{{ emp.id }}">
-                            <span style="opacity: 0.3; font-size: 0.75rem;">Run check...</span>
-                        </div>
+                    <td style="padding: 1rem;">
+                        <span style="color: var(--success);">● Active</span>
+                        <span id="risk-{{ emp.id }}" style="display:none; margin-left:0.4rem;"></span>
                     </td>
                     <td>
                         <div style="display: flex; gap: 0.75rem;">
-                            <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.85rem;">Edit</a>
+                            <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.85rem;">View Profile</a>
                         </div>
                     </td>
                 </tr>
@@ -67,17 +66,17 @@
     <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark);">
         <h2 style="margin-bottom: 1.5rem;">Add Employee</h2>
         <form action="{{ url_for('view_employees') }}" method="POST">
-            <div class="input-group" style="margin-bottom: 1rem;">
-                <input type="text" name="name" placeholder="Full Name" required style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+            <div class="input-group">
+                <input type="text" name="name" placeholder="Full Name" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
             </div>
-            <div class="input-group" style="margin-bottom: 1rem;">
-                <input type="email" name="email" placeholder="Email" required style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+            <div class="input-group">
+                <input type="email" name="email" placeholder="Email" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
             </div>
-            <div class="input-group" style="margin-bottom: 1rem;">
-                <input type="password" name="password" placeholder="Initial Password" required style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+            <div class="input-group">
+                <input type="password" name="password" placeholder="Initial Password" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
             </div>
-            <div class="input-group" style="margin-bottom: 1rem;">
-                <select name="role" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(25, 30, 45, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+            <div class="input-group">
+                <select name="role" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
                     <option value="employee">Employee</option>
                     <option value="hr">HR</option>
                     <option value="accounting">Accounting</option>
@@ -93,26 +92,31 @@
 </div>
 
 <script>
-async function checkBurnout() {
-    const statusBox = document.getElementById('burnout-status');
-    statusBox.innerHTML = 'Analyzing organization wellness...';
-    
-    try {
-        const res = await fetch('/api/burnout-scores');
-        const data = await res.json();
-        
-        data.forEach(score => {
-            const el = document.getElementById(`burnout-${score.employee_id}`);
-            if (el) {
-                const colorClass = score.risk_level === 'at_risk' ? 'badge-danger' : 
-                                 score.risk_level === 'watch' ? 'badge-warning' : 'badge-success';
-                el.innerHTML = `<span class="badge ${colorClass}" title="${score.reason}">${score.risk_level.replace('_', ' ').toUpperCase()}</span>`;
-            }
-        });
-        statusBox.innerHTML = 'Wellness check complete.';
-    } catch (e) {
-        statusBox.innerHTML = '<span style="color: var(--danger);">Failed to run check.</span>';
-    }
-}
+// Employee Search Logic
+document.getElementById('emp-search').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('tbody tr[data-searchable]').forEach(row => {
+        row.style.display = row.dataset.searchable.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+
+// Burnout Risk Loader
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/burnout-scores')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.scores) return;
+            data.scores.forEach(s => {
+                const el = document.getElementById(`risk-${s.employee_id}`);
+                if (!el) return;
+                const labels = { healthy: '🟢', watch: '🟡 Watch', at_risk: '🔴 At Risk' };
+                el.textContent = labels[s.risk_level] || '';
+                el.className = `risk-badge risk-${s.risk_level}`;
+                el.title = s.reason;
+                el.style.display = 'inline-flex';
+            });
+        })
+        .catch(() => {});
+});
 </script>
 {% endblock %}

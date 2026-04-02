@@ -2,45 +2,57 @@
 {% block title %}Login{% endblock %}
 
 {% block auth_content %}
-<div class="login-split">
-    <div class="login-brand">
-        <h1 style="font-size: 4rem; font-weight: 900; letter-spacing: -0.05em; margin-bottom: 1rem;">Payro</h1>
-        <p style="font-size: 1.5rem; opacity: 0.8; margin-bottom: 3rem;">Payroll, simplified.</p>
+<div class="login-split fadeInUp">
+    <!-- Left Column: Branding & Features -->
+    <div class="login-left">
+        <!-- Floating Blobs -->
+        <div class="floating-blob" style="top: 10%; left: 10%; background: var(--primary);"></div>
+        <div class="floating-blob" style="bottom: 10%; right: 10%; background: var(--secondary);"></div>
+        <div class="floating-blob" style="top: 50%; left: 50%; background: #8b5cf6;"></div>
         
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <div style="display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; font-weight: 500;">
-                <span style="color: var(--primary);">✦</span> Smart Payroll Processing
-            </div>
-            <div style="display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; font-weight: 500;">
-                <span style="color: var(--secondary);">✦</span> Autonomous Leave Tracking
-            </div>
-            <div style="display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; font-weight: 500;">
-                <span style="color: var(--warning);">✦</span> Generative AI Insights
+        <div style="z-index: 10; text-align: center;">
+            <div class="logo" style="font-size: 3.5rem; margin-bottom: 0.5rem;">Payro</div>
+            <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2.5rem;">Payroll intelligence for modern teams.</p>
+            
+            <div style="display: inline-flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center;">
+                <span class="glass" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 2rem;">✦ Smart Payroll</span>
+                <span class="glass" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 2rem;">✦ Leave Tracking</span>
+                <span class="glass" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 2rem;">✦ AI Insights</span>
             </div>
         </div>
     </div>
-    <div class="login-form-side">
-        <div class="glass shadow-premium" style="width: 100%; max-width: 400px; padding: 3rem; background: rgba(255,255,255,0.02); animation: fadeInUp 0.5s ease-out;">
-            <div style="text-align: center; margin-bottom: 2.5rem;">
-                <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">Payro</div>
-                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Secure Access Portal</p>
+
+    <!-- Right Column: Login Form -->
+    <div class="login-right">
+        <div style="width: 100%; max-width: 380px; padding: 2rem;">
+            <div style="margin-bottom: 2.5rem;">
+                <h1 style="font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 0.5rem;">Welcome back</h1>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Sign in to your organization dashboard.</p>
             </div>
+
+            {% if error %}
+            <div class="badge badge-danger" style="display: flex; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.8rem;">
+                ⚠ {{ error }}
+            </div>
+            {% endif %}
 
             <form action="{{ url_for('login') }}" method="POST">
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block;">Email Address</label>
-                    <input type="email" name="email" placeholder="name@company.com" required style="width: 100%; padding: 0.8rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+                <div class="input-group">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Email Address</label>
+                    <input type="email" name="email" placeholder="name@company.com" required 
+                        style="width: 100%; padding: 0.85rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; outline: none; transition: var(--transition);">
                 </div>
-                <div style="margin-bottom: 2rem;">
-                    <label style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block;">Password</label>
-                    <input type="password" name="password" placeholder="••••••••" required style="width: 100%; padding: 0.8rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+                <div class="input-group" style="margin-bottom: 2rem;">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required 
+                        style="width: 100%; padding: 0.85rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; outline: none; transition: var(--transition);">
                 </div>
-                <button type="submit" class="btn btn-primary" style="padding: 1rem; font-size: 1rem;">Sign in to Dashboard</button>
+                <button type="submit" class="btn btn-primary">Sign in to Payro</button>
             </form>
 
-            <div style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
-                Managed by Enterprise DBMS Core
-            </div>
+            <p style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
+                Secure terminal connection encrypted by DBMS Core.
+            </p>
         </div>
     </div>
 </div>
