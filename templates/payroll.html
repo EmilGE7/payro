@@ -98,7 +98,7 @@
             <div class="input-group" style="margin-bottom: 2rem;">
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Select Year</label>
                 <select name="year" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
-                    {% for y in range(2023, 2026) %}<option value="{{ y }}" {{ 'selected' if y == now.year }}>{{ y }}</option>{% endfor %}
+                    {% for y in range(2023, now.year + 2) %}<option value="{{ y }}" {{ 'selected' if y == now.year }}>{{ y }}</option>{% endfor %}
                 </select>
             </div>
             <div style="display: flex; gap: 1rem;">

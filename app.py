@@ -271,7 +271,11 @@ def logout():
 def dashboard():
     now = datetime.now()
     total_employees = User.query.filter_by(role='employee').count()
-    current_payroll = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(PayrollRecord.month == now.month, PayrollRecord.year == now.year).scalar() or 0.0
+    latest_pr = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).first()
+    if latest_pr:
+        current_payroll = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(PayrollRecord.month == latest_pr.month, PayrollRecord.year == latest_pr.year).scalar() or 0.0
+    else:
+        current_payroll = 0.0
     pending_leaves = LeaveRequest.query.filter_by(status='Pending').count()
     recent_payroll = PayrollRecord.query.filter(PayrollRecord.paid_date != None).order_by(PayrollRecord.paid_date.desc()).limit(5).all()
     return render_template('dashboard.html', user=current_user, now=now, total_employees=total_employees, total_payroll=current_payroll, pending_leaves=pending_leaves, recent_activities=recent_payroll)
@@ -343,7 +347,11 @@ def view_payroll():
                 db.session.add(PayrollRecord(user_id=ep.user_id, month=m, year=y, net_amount=net))
             db.session.commit()
     records = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all()
-    payout = sum(r.net_amount for r in records if r.month == datetime.now().month)
+    latest_rec = records[0] if records else None
+    if latest_rec:
+        payout = sum(r.net_amount for r in records if r.month == latest_rec.month and r.year == latest_rec.year)
+    else:
+        payout = 0
     return render_template('payroll.html', records=records, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05, now=datetime.now())
 
 @app.route('/api/ai/analyze', methods=['GET', 'POST'])
