@@ -1,0 +1,159 @@
+=========================================
+ PAYRO PLATFORM - COMPREHENSIVE CREDENTIALS
+=========================================
+
+Name: System Admin
+Email: admin@payroll.com
+Role: ADMIN
+Password: admin123
+----------------------------------------
+Name: Priya Nair
+Email: priya.nair@payroll.com
+Role: HR
+Password: Payro123!
+----------------------------------------
+Name: Rahul Menon
+Email: rahul.menon@payroll.com
+Role: HR
+Password: Payro123!
+----------------------------------------
+Name: Sneha Pillai
+Email: sneha.pillai@payroll.com
+Role: ACCOUNTING
+Password: Payro123!
+----------------------------------------
+Name: Arjun Varma
+Email: arjun.varma@payroll.com
+Role: ACCOUNTING
+Password: Payro123!
+----------------------------------------
+Name: Aditya Kumar
+Email: aditya.kumar@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Meera Krishnan
+Email: meera.krishnan@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Rohan Das
+Email: rohan.das@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Ananya Sharma
+Email: ananya.sharma@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Vikram Singh
+Email: vikram.singh@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Pooja Iyer
+Email: pooja.iyer@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Karthik Rajan
+Email: karthik.rajan@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Divya Suresh
+Email: divya.suresh@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Nikhil Bose
+Email: nikhil.bose@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Lakshmi Patel
+Email: lakshmi.patel@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Sanjay Gupta
+Email: sanjay.gupta@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Deepa Nambiar
+Email: deepa.nambiar@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Amit Joshi
+Email: amit.joshi@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Kavya Reddy
+Email: kavya.reddy@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Suresh Babu
+Email: suresh.babu@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Nisha Thomas
+Email: nisha.thomas@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Rajesh Pillai
+Email: rajesh.pillai@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Anjali Mehta
+Email: anjali.mehta@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Vivek Nair
+Email: vivek.nair@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Swathi Menon
+Email: swathi.menon@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Harish Raj
+Email: harish.raj@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: HR Manager
+Email: hr@payroll.com
+Role: HR
+Password: hr123
+----------------------------------------
+Name: Chief Accountant
+Email: accounting@payroll.com
+Role: ACCOUNTING
+Password: finance123
+----------------------------------------
+Name: John Doe
+Email: employee@payroll.com
+Role: EMPLOYEE
+Password: user123
+----------------------------------------
+Name: marl
+Email: mark@payroll.com
+Role: EMPLOYEE
+Password: Payro123!
+----------------------------------------
+Name: Jack
+Email: jack@payroll.com
+Role: ACCOUNTING
+Password: Payro123!
+----------------------------------------
