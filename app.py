@@ -298,6 +298,19 @@ def view_employees():
             flash(f"Error: {str(e)}", "danger")
     return render_template('employees.html', employees=User.query.all(), departments=Department.query.all())
 
+@app.route('/employee/<uuid:id>')
+@login_required
+def view_employee_profile(id):
+    if current_user.role not in ['admin', 'hr'] and current_user.id != id:
+        flash("Access Denied", "danger")
+        return redirect(url_for('dashboard'))
+    
+    employee = User.query.get_or_404(id)
+    recent_leaves = LeaveRequest.query.filter_by(user_id=id).order_by(LeaveRequest.start_date.desc()).limit(5).all()
+    recent_payrolls = PayrollRecord.query.filter_by(user_id=id).order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).limit(5).all()
+    
+    return render_template('employee_profile.html', employee=employee, recent_leaves=recent_leaves, recent_payrolls=recent_payrolls)
+
 @app.route('/attendance', methods=['GET', 'POST'])
 @login_required
 def view_attendance():

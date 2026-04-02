@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ employee.name }}'s Profile{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1rem;">
+    <a href="{{ url_for('view_employees') }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; text-decoration: none; color: var(--text-secondary);">← Back</a>
+    <div>
+        <h1 style="font-size: 1.875rem; font-weight: 700;">Employee Profile</h1>
+        <p style="color: var(--text-secondary);">Detailed overview for {{ employee.name }}</p>
+    </div>
+</header>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+    <!-- Identity Card -->
+    <div class="glass" style="padding: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: white;">
+                {{ employee.name[:1]|upper }}
+            </div>
+            <div>
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem;">{{ employee.name }}</h2>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="badge badge-info">{{ employee.role|upper }}</span>
+                    <span>{{ employee.profile.job_title if employee.profile else 'No Title' }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Email Address</div>
+                <div style="font-weight: 500;">{{ employee.email }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Department</div>
+                <div style="font-weight: 500;">{{ employee.profile.dept.name if employee.profile and employee.profile.dept else 'Unassigned' }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Contact Number</div>
+                <div style="font-weight: 500;">{{ employee.profile.contact if employee.profile and employee.profile.contact else '—' }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Joining Date</div>
+                <div style="font-weight: 500;">{{ employee.profile.joining_date.strftime('%Y-%m-%d') if employee.profile and employee.profile.joining_date else '—' }}</div>
+            </div>
+            <div style="grid-column: span 2;">
+                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Physical Address</div>
+                <div style="font-weight: 500;">{{ employee.profile.address if employee.profile and employee.profile.address else '—' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compensation Card -->
+    <div class="glass" style="padding: 2rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            Compensation Structure
+        </h2>
+        {% set ss = employee.profile.salary_structure if employee.profile else None %}
+        
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--glass-border);">
+                <span style="color: var(--text-secondary);">Base Salary</span>
+                <span style="font-weight: 700;">${{ "{:,.2f}".format(ss.base_salary if ss else 0) }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <span style="color: var(--text-secondary);">Allowances</span>
+                <span style="color: var(--success); font-weight: 600;">+${{ "{:,.2f}".format(ss.allowances if ss else 0) }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+                <span style="color: var(--text-secondary);">Deductions</span>
+                <span style="color: var(--danger); font-weight: 600;">-${{ "{:,.2f}".format(ss.deductions if ss else 0) }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+                <span style="font-weight: 800; font-size: 1.1rem; color: var(--primary);">Estimated Net Pay</span>
+                <span style="font-weight: 800; font-size: 1.25rem; color: var(--primary);">
+                    ${{ "{:,.2f}".format((ss.base_salary + ss.allowances - ss.deductions) if ss else 0) }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Recent Leaves -->
+    <div class="glass" style="padding: 2rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Recent Leave Requests</h2>
+        <div style="overflow-x: auto;">
+            <table class="payro-table" style="margin: 0;">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 0;">PERIOD</th>
+                        <th>DURATION</th>
+                        <th style="padding-right: 0;">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in recent_leaves %}
+                    <tr>
+                        <td style="padding-left: 0; font-size: 0.85rem;">{{ leave.start_date }} to {{ leave.end_date }}</td>
+                        <td style="font-size: 0.85rem;">{{ (leave.end_date - leave.start_date).days + 1 }} Days</td>
+                        <td style="padding-right: 0;">
+                            <span class="badge {% if leave.status == 'Approved' %}badge-success{% elif leave.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}">
+                                {{ leave.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" style="padding: 2rem 0; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No leave history found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Payroll -->
+    <div class="glass" style="padding: 2rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Recent Disbursements</h2>
+        <div style="overflow-x: auto;">
+            <table class="payro-table" style="margin: 0;">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 0;">PERIOD</th>
+                        <th>NET AMOUNT</th>
+                        <th style="padding-right: 0;">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pr in recent_payrolls %}
+                    <tr>
+                        <td style="padding-left: 0; font-size: 0.85rem;">{{ pr.month }}/{{ pr.year }}</td>
+                        <td style="font-weight: 700; color: var(--primary);">${{ "{:,.2f}".format(pr.net_amount) }}</td>
+                        <td style="padding-right: 0;">
+                            <span class="badge badge-success">● {{ pr.status }}</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" style="padding: 2rem 0; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No payroll history found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
