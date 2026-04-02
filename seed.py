@@ -19,10 +19,10 @@ def seed_db():
 
         # 2. Create Test Users for all Roles
         users_to_create = [
-            {'email': 'admin@payroll.com', 'name': 'System Admin', 'role': 'admin', 'password': 'admin123', 'dept': 'Executive', 'title': 'Chief Administrator', 'salary': 120000},
-            {'email': 'hr@payroll.com', 'name': 'HR Manager', 'role': 'hr', 'password': 'hr123', 'dept': 'HR', 'title': 'HR Director', 'salary': 85000},
-            {'email': 'accounting@payroll.com', 'name': 'Chief Accountant', 'role': 'accounting', 'password': 'finance123', 'dept': 'Finance', 'title': 'Head of Finance', 'salary': 90000},
-            {'email': 'employee@payroll.com', 'name': 'John Doe', 'role': 'employee', 'password': 'user123', 'dept': 'IT', 'title': 'Software Engineer', 'salary': 75000}
+            {'email': 'admin@payro.com', 'name': 'System Admin', 'role': 'admin', 'password': 'admin123', 'dept': 'Executive', 'title': 'Chief Administrator', 'salary': 120000},
+            {'email': 'hr@payro.com', 'name': 'HR Manager', 'role': 'hr', 'password': 'hr123', 'dept': 'HR', 'title': 'HR Director', 'salary': 85000},
+            {'email': 'accounting@payro.com', 'name': 'Chief Accountant', 'role': 'accounting', 'password': 'finance123', 'dept': 'Finance', 'title': 'Head of Finance', 'salary': 90000},
+            {'email': 'employee@payro.com', 'name': 'John Doe', 'role': 'employee', 'password': 'user123', 'dept': 'IT', 'title': 'Software Engineer', 'salary': 75000}
         ]
 
         print("\nCreating accounts...")

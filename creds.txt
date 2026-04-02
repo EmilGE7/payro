@@ -3,157 +3,157 @@
 =========================================
 
 Name: System Admin
-Email: admin@payroll.com
+Email: admin@payro.com
 Role: ADMIN
 Password: admin123
 ----------------------------------------
 Name: Priya Nair
-Email: priya.nair@payroll.com
+Email: priya.nair@payro.com
 Role: HR
 Password: Payro123!
 ----------------------------------------
 Name: Rahul Menon
-Email: rahul.menon@payroll.com
+Email: rahul.menon@payro.com
 Role: HR
 Password: Payro123!
 ----------------------------------------
 Name: Sneha Pillai
-Email: sneha.pillai@payroll.com
+Email: sneha.pillai@payro.com
 Role: ACCOUNTING
 Password: Payro123!
 ----------------------------------------
 Name: Arjun Varma
-Email: arjun.varma@payroll.com
+Email: arjun.varma@payro.com
 Role: ACCOUNTING
 Password: Payro123!
 ----------------------------------------
 Name: Aditya Kumar
-Email: aditya.kumar@payroll.com
+Email: aditya.kumar@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Meera Krishnan
-Email: meera.krishnan@payroll.com
+Email: meera.krishnan@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Rohan Das
-Email: rohan.das@payroll.com
+Email: rohan.das@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Ananya Sharma
-Email: ananya.sharma@payroll.com
+Email: ananya.sharma@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Vikram Singh
-Email: vikram.singh@payroll.com
+Email: vikram.singh@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Pooja Iyer
-Email: pooja.iyer@payroll.com
+Email: pooja.iyer@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Karthik Rajan
-Email: karthik.rajan@payroll.com
+Email: karthik.rajan@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Divya Suresh
-Email: divya.suresh@payroll.com
+Email: divya.suresh@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Nikhil Bose
-Email: nikhil.bose@payroll.com
+Email: nikhil.bose@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Lakshmi Patel
-Email: lakshmi.patel@payroll.com
+Email: lakshmi.patel@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Sanjay Gupta
-Email: sanjay.gupta@payroll.com
+Email: sanjay.gupta@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Deepa Nambiar
-Email: deepa.nambiar@payroll.com
+Email: deepa.nambiar@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Amit Joshi
-Email: amit.joshi@payroll.com
+Email: amit.joshi@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Kavya Reddy
-Email: kavya.reddy@payroll.com
+Email: kavya.reddy@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Suresh Babu
-Email: suresh.babu@payroll.com
+Email: suresh.babu@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Nisha Thomas
-Email: nisha.thomas@payroll.com
+Email: nisha.thomas@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Rajesh Pillai
-Email: rajesh.pillai@payroll.com
+Email: rajesh.pillai@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Anjali Mehta
-Email: anjali.mehta@payroll.com
+Email: anjali.mehta@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Vivek Nair
-Email: vivek.nair@payroll.com
+Email: vivek.nair@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Swathi Menon
-Email: swathi.menon@payroll.com
+Email: swathi.menon@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Harish Raj
-Email: harish.raj@payroll.com
+Email: harish.raj@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: HR Manager
-Email: hr@payroll.com
+Email: hr@payro.com
 Role: HR
 Password: hr123
 ----------------------------------------
 Name: Chief Accountant
-Email: accounting@payroll.com
+Email: accounting@payro.com
 Role: ACCOUNTING
 Password: finance123
 ----------------------------------------
 Name: John Doe
-Email: employee@payroll.com
+Email: employee@payro.com
 Role: EMPLOYEE
 Password: user123
 ----------------------------------------
 Name: marl
-Email: mark@payroll.com
+Email: mark@payro.com
 Role: EMPLOYEE
 Password: Payro123!
 ----------------------------------------
 Name: Jack
-Email: jack@payroll.com
+Email: jack@payro.com
 Role: ACCOUNTING
 Password: Payro123!
 ----------------------------------------

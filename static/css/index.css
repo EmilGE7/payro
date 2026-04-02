@@ -12,13 +12,7 @@
     --transition: all 0.2s ease-in-out;
 }
 
-html.light-mode { 
-    --bg-dark: #fbfbfc; 
-    --card-bg: #ffffff;
-    --glass-border: #e4e4e7;
-    --text-primary: #18181b;
-    --text-secondary: #71717a;
-}
+
 html.light-mode body { background-color: var(--bg-dark); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
