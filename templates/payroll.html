@@ -19,15 +19,15 @@
 <div class="grid-stats">
     <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--primary);">
         <div class="stat-label">Total Monthly Payout</div>
-        <div class="stat-value" data-countup="{{ total_payout|int }}" data-prefix="$">0</div>
+        <div class="stat-value" data-countup="{{ total_payout|int }}" data-prefix="₹">0</div>
     </div>
     <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--secondary);">
         <div class="stat-label">Estimated Tax Burden</div>
-        <div class="stat-value" data-countup="{{ tax_est|int }}" data-prefix="$">0</div>
+        <div class="stat-value" data-countup="{{ tax_est|int }}" data-prefix="₹">0</div>
     </div>
     <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--warning);">
         <div class="stat-label">Bonuses Issued</div>
-        <div class="stat-value" data-countup="{{ bonuses_est|int }}" data-prefix="$">0</div>
+        <div class="stat-value" data-countup="{{ bonuses_est|int }}" data-prefix="₹">0</div>
     </div>
 </div>
 
@@ -58,7 +58,7 @@
                         <div style="font-weight: 600;">{{ record.user.name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">Period: {{ record.month }}/{{ record.year }}</div>
                     </td>
-                    <td style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">${{ "{:,.2f}".format(record.net_amount) }}</td>
+                    <td style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">₹{{ "{:,.2f}".format(record.net_amount) }}</td>
                     <td>
                         <button class="btn glass" 
                             style="width:auto; padding:0.4rem 0.8rem; font-size:0.75rem; color:white;" 

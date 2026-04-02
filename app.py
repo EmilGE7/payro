@@ -176,14 +176,14 @@ def generate_payslip_pdf(payroll_record):
     pdf.cell(95, 7, f'Designation: {job_title}', ln=True)
     pdf.ln(10)
     pdf.set_font('helvetica', 'B', 12); pdf.cell(0, 10, 'Salary Breakdown', ln=True, fill=True)
-    pdf.set_font('helvetica', 'B', 10); pdf.cell(100, 10, 'Description', border=1); pdf.cell(90, 10, 'Amount (USD)', border=1, ln=True, align='R')
+    pdf.set_font('helvetica', 'B', 10); pdf.cell(100, 10, 'Description', border=1); pdf.cell(90, 10, 'Amount (INR)', border=1, ln=True, align='R')
     pdf.set_font('helvetica', '', 10)
     ss = payroll_record.user.profile.salary_structure if payroll_record.user.profile else None
     base, allowances, deductions = (ss.base_salary, ss.allowances, ss.deductions) if ss else (0, 0, 0)
-    pdf.cell(100, 10, 'Base Salary', border=1); pdf.cell(90, 10, f'${base:,.2f}', border=1, ln=True, align='R')
-    pdf.cell(100, 10, 'Allowances', border=1); pdf.cell(90, 10, f'${allowances:,.2f}', border=1, ln=True, align='R')
-    pdf.set_text_color(244, 63, 94); pdf.cell(100, 10, 'Deductions', border=1); pdf.cell(90, 10, f'-${deductions:,.2f}', border=1, ln=True, align='R')
-    pdf.set_text_color(0); pdf.set_font('helvetica', 'B', 12); pdf.cell(100, 12, 'NET PAYABLE', border=1); pdf.cell(90, 12, f'${payroll_record.net_amount:,.2f}', border=1, ln=True, align='R')
+    pdf.cell(100, 10, 'Base Salary', border=1); pdf.cell(90, 10, f'₹{base:,.2f}', border=1, ln=True, align='R')
+    pdf.cell(100, 10, 'Allowances', border=1); pdf.cell(90, 10, f'₹{allowances:,.2f}', border=1, ln=True, align='R')
+    pdf.set_text_color(244, 63, 94); pdf.cell(100, 10, 'Deductions', border=1); pdf.cell(90, 10, f'-₹{deductions:,.2f}', border=1, ln=True, align='R')
+    pdf.set_text_color(0); pdf.set_font('helvetica', 'B', 12); pdf.cell(100, 12, 'NET PAYABLE', border=1); pdf.cell(90, 12, f'₹{payroll_record.net_amount:,.2f}', border=1, ln=True, align='R')
     pdf.ln(20); pdf.set_font('helvetica', 'I', 10); pdf.multi_cell(0, 5, 'Computer-generated document. No signature required.')
     return pdf.output()
 
@@ -396,10 +396,10 @@ def ai_monthly_report():
         sixty_days_ago = (now - timedelta(days=60)).date()
         no_leave_names = [emp.name for emp in User.query.filter_by(role='employee').all() if not LeaveRequest.query.filter(LeaveRequest.user_id == emp.id, LeaveRequest.status == 'Approved', LeaveRequest.start_date >= sixty_days_ago).first()]
         
-        data = {"month": month_name, "year": now.year, "total_payroll_usd": round(total_payroll, 2), "total_employees": employee_count, "employees_paid_this_month": paid_count, "leave_requests": {"approved": leaves_approved, "pending": leaves_pending, "rejected": leaves_rejected}, "employees_no_leave_60_days": no_leave_names[:5]}
+        data = {"month": month_name, "year": now.year, "total_payroll_inr": round(total_payroll, 2), "total_employees": employee_count, "employees_paid_this_month": paid_count, "leave_requests": {"approved": leaves_approved, "pending": leaves_pending, "rejected": leaves_rejected}, "employees_no_leave_60_days": no_leave_names[:5]}
         system = "You are an HR analytics assistant for a company using Payro. Write a concise, professional monthly HR narrative in exactly 3-4 sentences. Focus on payroll cost, leave trends, and any risk signals. Write in plain business English. No bullet points. No markdown. Never invent data — use only the numbers provided. End with one forward-looking sentence."
         narrative = ask_openai(system, f"Generate HR narrative: {json.dumps(data)}")
-        if not narrative: narrative = f"In {month_name} {now.year}, {employee_count} employees were on payroll with a total payout of ${total_payroll:,.2f}. There are {leaves_pending} pending leave requests."
+        if not narrative: narrative = f"In {month_name} {now.year}, {employee_count} employees were on payroll with a total payout of ₹{total_payroll:,.2f}. There are {leaves_pending} pending leave requests."
         session['last_narrative'] = narrative; session['last_narrative_month'] = f"{month_name} {now.year}"
         return {"narrative": narrative, "month": f"{month_name} {now.year}"}
     except Exception: return {"error": "AI service temporarily unavailable"}, 503
@@ -424,10 +424,10 @@ def ai_explain_payslip(payroll_id):
         ss = rec.user.profile.salary_structure if rec.user.profile else None
         base = ss.base_salary if ss else rec.net_amount * 0.6; alw = ss.allowances if ss else rec.net_amount * 0.2; ded = ss.deductions if ss else rec.net_amount * 0.1
         pf = round(base * 0.12, 2); tds = round(max(0, (base * 12 - 250000) * 0.05 / 12), 2)
-        breakdown = {"employee_name": rec.user.name, "month_year": f"{rec.month}/{rec.year}", "gross_salary": round(base + alw, 2), "basic_salary": round(base, 2), "allowances": round(alw, 2), "pf_deduction": pf, "tds_deduction": tds, "other_deductions": round(max(0, ded - pf - tds), 2), "net_salary": round(rec.net_amount, 2), "currency": "USD"}
+        breakdown = {"employee_name": rec.user.name, "month_year": f"{rec.month}/{rec.year}", "gross_salary": round(base + alw, 2), "basic_salary": round(base, 2), "allowances": round(alw, 2), "pf_deduction": pf, "tds_deduction": tds, "other_deductions": round(max(0, ded - pf - tds), 2), "net_salary": round(rec.net_amount, 2), "currency": "INR"}
         system = "You are a friendly HR assistant explaining an employee's payslip in plain, simple English. Write 2-3 sentences total. Explain what each main component means in everyday language. Be warm, clear, and helpful. Never use financial jargon without explaining it. Do not use bullet points."
         explanation = ask_openai(system, f"Explain this payslip to the employee: {json.dumps(breakdown)}")
-        if not explanation: explanation = f"Your gross pay this month was ${breakdown['gross_salary']:,.2f}, which includes your base salary of ${breakdown['basic_salary']:,.2f} plus allowances. After deductions your net take-home is ${breakdown['net_salary']:,.2f}."
+        if not explanation: explanation = f"Your gross pay this month was ₹{breakdown['gross_salary']:,.2f}, which includes your base salary of ₹{breakdown['basic_salary']:,.2f} plus allowances. After deductions your net take-home is ₹{breakdown['net_salary']:,.2f}."
         return {"explanation": explanation, "breakdown": breakdown}
     except Exception: return {"error": "AI service temporarily unavailable"}, 503
 
