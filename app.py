@@ -341,7 +341,7 @@ def view_payroll():
             db.session.commit()
     records = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all()
     payout = sum(r.net_amount for r in records if r.month == datetime.now().month)
-    return render_template('payroll.html', records=records, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05)
+    return render_template('payroll.html', records=records, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05, now=datetime.now())
 
 @app.route('/api/ai/analyze', methods=['GET', 'POST'])
 @login_required
