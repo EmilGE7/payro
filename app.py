@@ -279,8 +279,9 @@ def dashboard():
 @app.route('/employees', methods=['GET', 'POST'])
 @role_required('admin', 'hr')
 def view_employees():
-    if request.method == 'POST' and current_user.role == 'admin':
-        name, email, password, role, dept_id = request.form.get('name'), request.form.get('email'), request.form.get('password'), request.form.get('role'), request.form.get('dept_id')
+    if request.method == 'POST' and current_user.role in ['admin', 'hr']:
+        name, email, password, role, dept_id_raw = request.form.get('name'), request.form.get('email'), request.form.get('password'), request.form.get('role'), request.form.get('dept_id')
+        dept_id = int(dept_id_raw) if dept_id_raw and dept_id_raw.isdigit() else None
         try:
             hashed_password = generate_password_hash(password)
             user = User(name=name, email=email, password=hashed_password, role=role)

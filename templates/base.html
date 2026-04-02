@@ -23,6 +23,10 @@
             <li class="nav-item">
                 <a href="{{ url_for('view_employees') }}" class="nav-link {{ 'active' if request.path == url_for('view_employees') else '' }}">👥 Employees</a>
             </li>
+            {% else %}
+            <li class="nav-item">
+                <a href="{{ url_for('view_employee_profile', id=current_user.id) }}" class="nav-link {{ 'active' if 'employee' in request.path else '' }}">👤 My Profile</a>
+            </li>
             {% endif %}
             <li class="nav-item">
                 <a href="{{ url_for('view_attendance') }}" class="nav-link {{ 'active' if request.path == url_for('view_attendance') else '' }}">📅 Attendance</a>
