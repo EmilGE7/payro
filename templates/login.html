@@ -1,57 +1,43 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% block title %}Executive Login{% endblock %}
 
 {% block auth_content %}
-<div class="login-split fadeInUp">
-    <!-- Left Column: Branding & Features -->
-    <div class="login-left">
-        <!-- Floating Blobs -->
-        <div class="floating-blob" style="top: 10%; left: 10%; background: var(--primary);"></div>
-        <div class="floating-blob" style="bottom: 10%; right: 10%; background: var(--secondary);"></div>
-        <div class="floating-blob" style="top: 50%; left: 50%; background: #8b5cf6;"></div>
-        
-        <div style="z-index: 10; text-align: center;">
-            <div class="logo" style="font-size: 3.5rem; margin-bottom: 0.5rem;">Payro</div>
-            <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2.5rem;">Payroll intelligence for modern teams.</p>
-            
-            <div style="display: inline-flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center;">
-                <span class="glass" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 2rem;">✦ Smart Payroll</span>
-                <span class="glass" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 2rem;">✦ Leave Tracking</span>
-                <span class="glass" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 2rem;">✦ AI Insights</span>
+<div class="login-container fadeInUp">
+    <div class="login-card glass aurora-hover">
+        <!-- Brand Header -->
+        <div style="text-align: center; margin-bottom: 3.5rem;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #ffffff; color: #000000; border-radius: 12px; font-size: 1.5rem; margin-bottom: 1.25rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                💼
             </div>
+            <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.06em; margin-bottom: 0.5rem; color: #ffffff;">Payro Console</h1>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Intelligence for modern organizations.</p>
         </div>
-    </div>
 
-    <!-- Right Column: Login Form -->
-    <div class="login-right">
-        <div style="width: 100%; max-width: 380px; padding: 2rem;">
-            <div style="margin-bottom: 2.5rem;">
-                <h1 style="font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 0.5rem;">Welcome back</h1>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">Sign in to your organization dashboard.</p>
+        {% if error %}
+        <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.2); color: #f87171; padding: 0.85rem; border-radius: 12px; font-size: 0.8rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.6rem;">
+            <span style="font-size: 1.1rem;">⚠</span> {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="input-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; color: var(--text-secondary);">Access Identity</label>
+                <input type="email" name="email" placeholder="admin@payro.com" required>
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 2.5rem;">
+                <label style="display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; color: var(--text-secondary);">Security Key</label>
+                <input type="password" name="password" placeholder="••••••••" required>
             </div>
 
-            {% if error %}
-            <div class="badge badge-danger" style="display: flex; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.8rem;">
-                ⚠ {{ error }}
-            </div>
-            {% endif %}
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.9rem;">
+                Establish Connection ✦
+            </button>
+        </form>
 
-            <form action="{{ url_for('login') }}" method="POST">
-                <div class="input-group">
-                    <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Email Address</label>
-                    <input type="email" name="email" placeholder="name@company.com" required 
-                        style="width: 100%; padding: 0.85rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; outline: none; transition: var(--transition);">
-                </div>
-                <div class="input-group" style="margin-bottom: 2rem;">
-                    <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Password</label>
-                    <input type="password" name="password" placeholder="••••••••" required 
-                        style="width: 100%; padding: 0.85rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white; outline: none; transition: var(--transition);">
-                </div>
-                <button type="submit" class="btn btn-primary">Sign in to Payro</button>
-            </form>
-
-            <p style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
-                Secure terminal connection encrypted by DBMS Core.
+        <div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); text-align: center;">
+            <p style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">
+                Secure Terminal • Audit Node Active
             </p>
         </div>
     </div>

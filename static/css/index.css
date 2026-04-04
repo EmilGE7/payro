@@ -213,3 +213,52 @@ body {
     .main-content { margin-left: 0; width: 100%; padding: 1.5rem; }
     .grid-stats { grid-template-columns: 1fr; }
 }
+
+/* Executive Login Layout */
+.login-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    z-index: 10;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 3.5rem 3rem;
+    background: rgba(10, 10, 12, 0.5);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.login-card:hover {
+    border-color: var(--glass-border-hover);
+}
+
+.login-card .input-group input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    color: white;
+    width: 100%;
+    outline: none;
+    transition: var(--transition);
+}
+
+.login-card .input-group input:focus {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+@media (max-width: 480px) {
+    .login-card { padding: 2.5rem 1.5rem; }
+}
