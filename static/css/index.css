@@ -1,10 +1,10 @@
 :root {
     --primary: #6366f1;
-    --primary-glow: rgba(99, 102, 241, 0.4);
+    --primary-glow: rgba(99, 102, 241, 0.2);
     --bg-dark: #030303;
-    --card-bg: rgba(10, 10, 12, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-border-hover: rgba(255, 255, 255, 0.15);
+    --card-bg: rgba(10, 10, 12, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --glass-border-hover: rgba(255, 255, 255, 0.1);
     --text-primary: #ffffff;
     --text-secondary: #94a3b8;
     --text-muted: #475569;
@@ -55,7 +55,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* Aurora Hover Borders */
+/* Aurora Hover Borders - Professional Cut */
 .aurora-hover:hover {
     position: relative;
     border-color: transparent;
@@ -64,7 +64,7 @@ body {
     content: "";
     position: absolute;
     inset: -1px;
-    padding: 1px;
+    padding: 0.5px; /* Extremely thin professional aurora */
     border-radius: inherit;
     background: linear-gradient(135deg, #6366f1, #a855f7, #6366f1);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -79,7 +79,7 @@ body {
     100% { background-position: 200% 50%; }
 }
 
-/* Sidebar & Navigation - Stabilized */
+/* Sidebar Navigation */
 .sidebar {
     width: 270px;
     height: calc(100vh - 2.5rem);
@@ -91,11 +91,11 @@ body {
 }
 
 .sidebar:hover {
-    transform: none !important; /* Lock navigation - no 2px jump */
+    transform: none !important; /* Static navigation */
 }
 
 .sidebar.aurora-hover:hover::before {
-    inset: 0 !important; /* Ensure the glow remains flush with the border */
+    inset: 0 !important;
 }
 
 .logo { 
@@ -156,14 +156,14 @@ body {
     background: var(--primary); 
     color: #ffffff; 
     border: 1px solid var(--primary); 
-    box-shadow: 0 4px 12px var(--primary-glow);
+    box-shadow: 0 4px 8px var(--primary-glow);
 }
 .btn-primary:hover { 
     background: #4f46e5;
-    box-shadow: 0 6px 16px var(--primary-glow);
+    box-shadow: 0 6px 12px var(--primary-glow);
 }
 
-/* Dashboard Bento Boxes */
+/* Executive Stat Cards */
 .grid-stats { 
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
@@ -190,14 +190,9 @@ body {
 
 .ai-card { 
     background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.15), transparent);
-    animation: aiPulse 4s infinite alternate;
-}
-@keyframes aiPulse {
-    from { box-shadow: 0 0 20px rgba(99, 102, 241, 0.05); }
-    to { box-shadow: 0 0 40px rgba(99, 102, 241, 0.2); }
 }
 
-/* Badges & Tables */
+/* Table Design Refined */
 .payro-table td { 
     padding: 1rem 1.25rem; 
     color: var(--text-secondary);
