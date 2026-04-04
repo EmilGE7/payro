@@ -9,10 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
     {% if current_user.is_authenticated %}
-    <nav class="sidebar glass">
+    <nav class="sidebar glass aurora-hover">
         <div class="logo">
-            <span style="font-size: 1.5rem;">💼</span> Payro
+            <div style="width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: black; font-size: 1.2rem;">💼</div>
+            Payro
         </div>
 
         <ul class="nav-links">

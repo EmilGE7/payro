@@ -8,34 +8,37 @@
 </header>
 
 <div class="grid-stats">
-    <div class="stat-card glass fadeInUp" style="animation-delay: 0.05s;">
+    <div class="stat-card glass aurora-hover fadeInUp" style="animation-delay: 0.1s;">
         <div class="stat-label">Workforce</div>
         <div class="stat-value" data-countup="{{ total_employees }}">0</div>
-        <div style="color: var(--success); font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.25rem;">
-            <span style="font-size: 1rem;">↑</span> Active
+        <div style="color: var(--success); font-size: 0.75rem; font-weight: 700; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <div style="width: 6px; height: 6px; background: currentColor; border-radius: 50%; box-shadow: 0 0 10px currentColor;"></div>
+            Active
         </div>
     </div>
-    <div class="stat-card glass fadeInUp" style="animation-delay: 0.1s;">
+    <div class="stat-card glass aurora-hover fadeInUp" style="animation-delay: 0.2s;">
         <div class="stat-label">Expenditure</div>
         <div class="stat-value" data-countup="{{ total_payroll|int }}" data-prefix="₹">0</div>
-        <div style="color: var(--text-secondary); font-size: 0.7rem; margin-top: 0.5rem;">Current Period</div>
+        <div style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 1rem;">Current Period</div>
     </div>
-    <div class="stat-card glass fadeInUp" style="animation-delay: 0.15s;">
+    <div class="stat-card glass aurora-hover fadeInUp" style="animation-delay: 0.3s;">
         <div class="stat-label">Pending</div>
         <div class="stat-value" data-countup="{{ pending_leaves }}">0</div>
-        <div style="color: var(--warning); font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem;">Leave Requests</div>
+        <div style="color: var(--warning); font-size: 0.75rem; font-weight: 700; margin-top: 1rem;">Leave Requests</div>
     </div>
     
-    <div class="stat-card glass ai-card fadeInUp" style="animation-delay: 0.2s; border: 1px solid #3f3f46;">
-        <div class="stat-label" style="color: #60a5fa;">✦ AI INSIGHTS</div>
-        <div id="ai-narrative" style="font-size: 0.8rem; color: var(--text-secondary); margin: 0.75rem 0; line-height: 1.5; min-height: 48px;">
+    <div class="stat-card glass ai-card fadeInUp" style="animation-delay: 0.4s;">
+        <div class="stat-label" style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.2rem;">✦</span> AI INSIGHTS
+        </div>
+        <div id="ai-narrative" style="font-size: 0.85rem; color: var(--text-secondary); margin: 1rem 0; line-height: 1.6; min-height: 48px;">
             Monthly intelligence summary.
         </div>
-        <div style="display: flex; gap: 0.5rem;">
-            <button id="gen-report-btn" onclick="generateReport()" class="btn btn-primary" style="padding: 0.4rem 0.75rem; font-size: 0.75rem; border-radius: 6px;">
+        <div style="display: flex; gap: 0.75rem;">
+            <button id="gen-report-btn" onclick="generateReport()" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
                 Generate
             </button>
-            <a id="dl-report-btn" href="/ai/monthly-report/pdf" class="btn" style="display: none; padding: 0.4rem 0.75rem; font-size: 0.75rem; border-radius: 6px;">
+            <a id="dl-report-btn" href="/ai/monthly-report/pdf" class="btn" style="display: none; padding: 0.5rem 1rem; font-size: 0.8rem;">
                 PDF
             </a>
         </div>
