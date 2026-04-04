@@ -79,7 +79,7 @@ body {
     100% { background-position: 200% 50%; }
 }
 
-/* Sidebar & Navigation */
+/* Sidebar & Navigation - Stabilized */
 .sidebar {
     width: 270px;
     height: calc(100vh - 2.5rem);
@@ -88,6 +88,14 @@ body {
     top: 1.25rem;
     left: 1.25rem;
     z-index: 100;
+}
+
+.sidebar:hover {
+    transform: none !important; /* Lock navigation - no 2px jump */
+}
+
+.sidebar.aurora-hover:hover::before {
+    inset: 0 !important; /* Ensure the glow remains flush with the border */
 }
 
 .logo { 
