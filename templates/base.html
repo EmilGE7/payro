@@ -12,8 +12,6 @@
     {% if current_user.is_authenticated %}
     <nav class="sidebar glass">
         <div class="logo" style="margin-bottom: 2rem;">Payro</div>
-        
-        <button id="theme-toggle" style="background:none; border:1px solid var(--glass-border); border-radius:0.5rem; padding:0.4rem 0.75rem; color:var(--text-secondary); cursor:pointer; font-size:0.8rem; margin-bottom:1.5rem; transition:var(--transition);">🌙 Dark</button>
 
         <ul class="nav-links">
             {% if current_user.role != 'employee' %}
@@ -72,18 +70,12 @@
     </main>
 
     <script>
-    const toggle = document.getElementById('theme-toggle');
-    if (toggle) {
-        if (localStorage.getItem('payro-theme') === 'light') {
-            document.documentElement.classList.add('light-mode');
-            toggle.textContent = '☀️ Light';
-        }
-        toggle.addEventListener('click', () => {
-            const isLight = document.documentElement.classList.toggle('light-mode');
-            localStorage.setItem('payro-theme', isLight ? 'light' : 'dark');
-            toggle.textContent = isLight ? '☀️ Light' : '🌙 Dark';
-        });
-    }
+    // System UI logic only (no theme toggling)
+    document.addEventListener('DOMContentLoaded', () => {
+        // Ensuring theme is Dark Mode only as requested
+        localStorage.setItem('payro-theme', 'dark');
+        document.documentElement.classList.remove('light-mode');
+    });
     </script>
     {% else %}
         {% block auth_content %}{% endblock %}

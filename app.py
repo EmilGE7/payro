@@ -326,7 +326,7 @@ def view_employees():
             profile = EmployeeProfile(user_id=user.id, dept_id=dept_id, job_title=f"{role.capitalize()} Staff")
             db.session.add(profile)
             db.session.flush()
-            db.session.add(SalaryStructure(profile_id=profile.id, base_salary=5000))
+            db.session.add(SalaryStructure(profile_id=profile.id, base_salary=50000))
             db.session.add(Notification(user_id=user.id, message="Welcome to Payro!"))
             db.session.commit()
             flash(f"Added {name}", "success")

@@ -76,6 +76,14 @@
                 <input type="password" name="password" placeholder="Initial Password" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
             </div>
             <div class="input-group">
+                <select name="dept_id" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                    <option value="">Select Department</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}">{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="input-group">
                 <select name="role" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
                     <option value="employee">Employee</option>
                     <option value="hr">HR</option>

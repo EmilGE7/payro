@@ -22,7 +22,13 @@ def seed_db():
             {'email': 'admin@payro.com', 'name': 'System Admin', 'role': 'admin', 'password': 'admin123', 'dept': 'Executive', 'title': 'Chief Administrator', 'salary': 120000},
             {'email': 'hr@payro.com', 'name': 'HR Manager', 'role': 'hr', 'password': 'hr123', 'dept': 'HR', 'title': 'HR Director', 'salary': 85000},
             {'email': 'accounting@payro.com', 'name': 'Chief Accountant', 'role': 'accounting', 'password': 'finance123', 'dept': 'Finance', 'title': 'Head of Finance', 'salary': 90000},
-            {'email': 'employee@payro.com', 'name': 'John Doe', 'role': 'employee', 'password': 'user123', 'dept': 'IT', 'title': 'Software Engineer', 'salary': 75000}
+            {'email': 'employee@payro.com', 'name': 'John Doe', 'role': 'employee', 'password': 'user123', 'dept': 'IT', 'title': 'Software Engineer', 'salary': 75000},
+            {'email': 'vikram@payro.com', 'name': 'Vikram Singh', 'role': 'employee', 'password': 'user123', 'dept': 'IT', 'title': 'Senior Architect', 'salary': 110000},
+            {'email': 'priya@payro.com', 'name': 'Priya Sharma', 'role': 'employee', 'password': 'user123', 'dept': 'HR', 'title': 'Recruitment Lead', 'salary': 65000},
+            {'email': 'anita@payro.com', 'name': 'Anita Desai', 'role': 'employee', 'password': 'user123', 'dept': 'Finance', 'title': 'Financial Analyst', 'salary': 72000},
+            {'email': 'rohan@payro.com', 'name': 'Rohan Rao', 'role': 'employee', 'password': 'user123', 'dept': 'Operations', 'title': 'Ops Manager', 'salary': 80000},
+            {'email': 'aditi@payro.com', 'name': 'Aditi Verma', 'role': 'employee', 'password': 'user123', 'dept': 'IT', 'title': 'Fullstack Developer', 'salary': 95000},
+            {'email': 'suresh@payro.com', 'name': 'Suresh Gupta', 'role': 'employee', 'password': 'user123', 'dept': 'Operations', 'title': 'Facilities Coordinator', 'salary': 45000}
         ]
 
         print("\nCreating accounts...")
