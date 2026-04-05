@@ -56,8 +56,10 @@ body {
 }
 
 /* Aurora Hover Borders - Professional Cut */
-.aurora-hover:hover {
+.aurora-hover {
     position: relative;
+}
+.aurora-hover:hover {
     border-color: transparent;
 }
 .aurora-hover:hover::before {
