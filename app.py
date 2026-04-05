@@ -109,6 +109,19 @@ class PayrollRecord(db.Model):
     status = db.Column(db.String(20), default='Paid')
     user = db.relationship('User', backref='payroll_records', lazy=True)
 
+class SalaryChangeRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
+    requested_by = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
+    change_type = db.Column(db.String(20), nullable=False) # 'increment', 'decrement'
+    amount = db.Column(db.Float, nullable=False)
+    reason = db.Column(db.Text)
+    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', foreign_keys=[user_id], backref='salary_requests')
+    requester = db.relationship('User', foreign_keys=[requested_by])
+
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
@@ -296,7 +309,6 @@ def logout():
 
 @app.route('/dashboard')
 @login_required
-@cache.cached(timeout=30)
 def dashboard():
     if current_user.role == 'employee':
         return redirect(url_for('view_employee_profile', id=current_user.id))
@@ -384,7 +396,59 @@ def view_payroll():
         payout = sum(r.net_amount for r in records if r.month == latest_rec.month and r.year == latest_rec.year)
     else:
         payout = 0
-    return render_template('payroll.html', records=records, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05, now=datetime.now())
+    pending_reqs = SalaryChangeRequest.query.filter_by(status='Pending').all()
+    return render_template('payroll.html', records=records, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05, now=datetime.now(), pending_requests=pending_reqs)
+
+@app.route('/salary/request', methods=['POST'])
+@role_required('hr', 'admin')
+def request_salary_change():
+    try:
+        user_id = request.form.get('user_id')
+        change_type = request.form.get('change_type')
+        amount = float(request.form.get('amount'))
+        reason = request.form.get('reason')
+        
+        db.session.add(SalaryChangeRequest(
+            user_id=user_id,
+            requested_by=current_user.id,
+            change_type=change_type,
+            amount=amount,
+            reason=reason
+        ))
+        db.session.commit()
+        flash("Salary change application submitted to Accounting.", "success")
+    except Exception as e:
+        flash(f"Error submitting request: {e}", "danger")
+    return redirect(url_for('view_employee_profile', id=user_id))
+
+@app.route('/salary/approve', methods=['POST'])
+@role_required('accounting', 'admin')
+def approve_salary_change():
+    try:
+        req_id = request.form.get('request_id')
+        action = request.form.get('action') # 'Approved' or 'Rejected'
+        req_obj = SalaryChangeRequest.query.get(req_id)
+        if req_obj and req_obj.status == 'Pending':
+            req_obj.status = action
+            if action == 'Approved':
+                ss = req_obj.user.profile.salary_structure
+                old_salary = ss.base_salary
+                if req_obj.change_type == 'increment':
+                    ss.base_salary += req_obj.amount
+                elif req_obj.change_type == 'decrement':
+                    ss.base_salary -= req_obj.amount
+                
+                db.session.add(SalaryHistory(
+                    user_id=req_obj.user_id,
+                    old_salary=old_salary,
+                    new_salary=ss.base_salary,
+                    changed_by=current_user.name
+                ))
+            db.session.commit()
+            flash(f"Salary request {action.lower()}.", "success")
+    except Exception as e:
+        flash(f"Error processing request: {str(e)}", "danger")
+    return redirect(url_for('view_payroll'))
 
 @app.route('/api/ai/analyze', methods=['GET', 'POST'])
 @login_required

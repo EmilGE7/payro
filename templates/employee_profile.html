@@ -23,7 +23,11 @@
     <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <h3 style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Compensation</h3>
+            {% if current_user.role in ['hr', 'admin'] %}
+            <button class="btn glass" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; width: auto;" onclick="document.getElementById('salaryModal').style.display='flex'">Adjust ✎</button>
+            {% else %}
             <span style="color: var(--text-muted); font-size: 1.25rem;">⋮</span>
+            {% endif %}
         </div>
         {% set ss = employee.profile.salary_structure if employee.profile else None %}
         {% set net_pay = ((ss.base_salary or 0) + (ss.allowances or 0) - (ss.deductions or 0)) if ss else 0 %}
@@ -98,6 +102,35 @@
 </div>
 
 <!-- Bottom Grid -->
+
+<!-- Salary Change Request Modal -->
+<div id="salaryModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark); border-radius: 32px;">
+        <h2 style="margin-bottom: 1.5rem; font-weight: 800;">Request Salary Change</h2>
+        <form action="{{ url_for('request_salary_change') }}" method="POST">
+            <input type="hidden" name="user_id" value="{{ employee.id }}">
+            <div class="input-group">
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-secondary);">Change Type</label>
+                <select name="change_type" style="width: 100%; padding: 0.85rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 12px; outline: none;">
+                    <option value="increment">Increment (Raise)</option>
+                    <option value="decrement">Decrement (Reduction)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-secondary);">Amount (₹)</label>
+                <input type="number" name="amount" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;" value="1000">
+            </div>
+            <div class="input-group" style="margin-bottom: 2rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-secondary);">Justification</label>
+                <textarea name="reason" rows="3" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" style="flex:1;">Submit Request</button>
+                <button type="button" class="btn glass" style="flex:1;" onclick="document.getElementById('salaryModal').style.display='none'">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
     <!-- Base Salary -->
     <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0));">

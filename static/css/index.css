@@ -164,20 +164,20 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background: #ffffff;
-    color: var(--text-primary);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-.btn:hover { background: #fafafa; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 .btn-primary { 
-    background: #111111; 
+    background: var(--primary); 
     color: #ffffff; 
-    border: 1px solid #000; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid transparent; 
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
 .btn-primary:hover { 
-    background: #222222;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    background: #4f46e5;
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
 }
 
 /* Executive Stat Cards */
