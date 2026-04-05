@@ -17,26 +17,26 @@
 </header>
 
 <div class="grid-stats">
-    <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--primary);">
-        <div class="stat-label">Total Monthly Payout</div>
-        <div class="stat-value" data-countup="{{ total_payout|int }}" data-prefix="₹">0</div>
+    <div class="stat-card glass shadow-premium" style="border-radius: 32px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0,0,0,0));">
+        <div class="stat-label" style="color: #a5b4fc;">Total Monthly Payout</div>
+        <div class="stat-value" data-countup="{{ total_payout|int }}" data-prefix="₹" style="color: #ffffff;">0</div>
     </div>
-    <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--secondary);">
-        <div class="stat-label">Estimated Tax Burden</div>
-        <div class="stat-value" data-countup="{{ tax_est|int }}" data-prefix="₹">0</div>
+    <div class="stat-card glass shadow-premium" style="border-radius: 32px; background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(0,0,0,0));">
+        <div class="stat-label" style="color: #fdba74;">Estimated Tax Burden</div>
+        <div class="stat-value" data-countup="{{ tax_est|int }}" data-prefix="₹" style="color: #ffffff;">0</div>
     </div>
-    <div class="stat-card glass shadow-premium" style="border-left: 4px solid var(--warning);">
-        <div class="stat-label">Bonuses Issued</div>
-        <div class="stat-value" data-countup="{{ bonuses_est|int }}" data-prefix="₹">0</div>
+    <div class="stat-card glass shadow-premium" style="border-radius: 32px; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0));">
+        <div class="stat-label" style="color: var(--text-secondary);">Bonuses Issued</div>
+        <div class="stat-value" data-countup="{{ bonuses_est|int }}" data-prefix="₹" style="color: #ffffff;">0</div>
     </div>
 </div>
 
-<div class="glass" style="padding: 2rem;">
+<div class="glass" style="padding: 2.5rem; border-radius: 32px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 700;">Salary History & Logs</h2>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">Salary History & Logs</h2>
         <input type="text" id="pay-search" placeholder="🔍 Search employee/period..." 
-            style="max-width:300px; padding:0.65rem 1rem; background:rgba(255,255,255,0.05); 
-            border:1px solid var(--glass-border); border-radius:0.5rem; color:white; width:100%; outline:none;" 
+            style="max-width:300px; padding:0.65rem 1rem; background: rgba(255,255,255,0.03); 
+            border:1px solid var(--glass-border); border-radius:12px; color:white; width:100%; outline:none; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" 
             onkeyup="filterPayTable()">
     </div>
     
@@ -85,19 +85,19 @@
 </div>
 
 <!-- Process Modal -->
-<div id="processModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
-    <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark);">
-        <h2 style="margin-bottom: 1.5rem;">Process Monthly Payroll</h2>
+<div id="processModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="glass" style="width: 400px; padding: 2.5rem; border-radius: 32px; background: var(--bg-dark);">
+        <h2 style="margin-bottom: 1.5rem; font-weight: 800;">Process Monthly Payroll</h2>
         <form action="{{ url_for('view_payroll') }}" method="POST">
             <div class="input-group">
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Select Month</label>
-                <select name="month" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                <select name="month" style="width: 100%; padding: 0.85rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 12px; outline: none;">
                     {% for m in range(1, 13) %}<option value="{{ m }}" {{ 'selected' if m == now.month }}>{{ m }}</option>{% endfor %}
                 </select>
             </div>
             <div class="input-group" style="margin-bottom: 2rem;">
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-secondary);">Select Year</label>
-                <select name="year" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                <select name="year" style="width: 100%; padding: 0.85rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 12px; outline: none;">
                     {% for y in range(2023, now.year + 2) %}<option value="{{ y }}" {{ 'selected' if y == now.year }}>{{ y }}</option>{% endfor %}
                 </select>
             </div>
@@ -110,9 +110,9 @@
 </div>
 
 <!-- Explainer Modal -->
-<div id="explainModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
-    <div class="glass" style="width: 500px; padding: 2.5rem; background: var(--bg-dark);">
-        <h2 style="margin-bottom: 0.5rem; color: var(--primary);">AI Payslip Breakdown</h2>
+<div id="explainModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="glass" style="width: 500px; padding: 2.5rem; border-radius: 32px; background: var(--bg-dark);">
+        <h2 style="margin-bottom: 0.5rem; font-weight: 800; color: #a5b4fc;">AI Payslip Breakdown</h2>
         <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Generative Analysis of Salary Components</p>
         <div id="ai-explanation" style="font-size: 0.95rem; line-height: 1.6; min-height: 100px; margin-bottom: 2rem; color: var(--text-primary);">
             <div class="skeleton" style="height: 120px; width: 100%;"></div>

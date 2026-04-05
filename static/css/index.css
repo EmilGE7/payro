@@ -1,23 +1,31 @@
 :root {
     --primary: #6366f1;
-    --primary-glow: rgba(99, 102, 241, 0.2);
-    --bg-dark: #030303;
-    --card-bg: rgba(10, 10, 12, 0.5);
-    --glass-border: rgba(255, 255, 255, 0.05);
-    --glass-border-hover: rgba(255, 255, 255, 0.1);
-    --text-primary: #ffffff;
+    --primary-glow: rgba(99, 102, 241, 0.4);
+    
+    --bg-light: #0d0d12;
+    --sidebar-bg: #050508;
+    
+    --card-bg: rgba(22, 22, 28, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08); /* machined edge */
+    --glass-border-hover: rgba(255, 255, 255, 0.15);
+    
+    --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted: #475569;
-    --success: #34d399;
-    --danger: #f87171;
-    --warning: #fbbf24;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --sidebar-text: #ffffff;
+    --sidebar-text-sec: #94a3b8;
+    
+    --success: #8cc63f;
+    --danger: #ff4757;
+    --warning: #ffa502;
+    --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
 
 body {
-    background-color: var(--bg-dark);
+    background-color: var(--bg-light);
     color: var(--text-primary);
     min-height: 100vh;
     display: flex;
@@ -25,21 +33,21 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* New Gen Living Background */
+/* Background Gradients */
 .bg-blobs {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: -1;
     overflow: hidden;
-    filter: blur(120px);
+    filter: blur(100px);
+    opacity: 0.6;
 }
 .blob {
     position: absolute;
     border-radius: 50%;
-    opacity: 0.12;
 }
-.blob-1 { top: -15%; left: -10%; width: 60vw; height: 60vw; background: #4f46e5; }
-.blob-2 { bottom: -15%; right: -10%; width: 50vw; height: 50vw; background: #6366f1; }
+.blob-1 { top: -20%; left: -10%; width: 50vw; height: 50vw; background: #e3dec9; }
+.blob-2 { bottom: -20%; right: -10%; width: 40vw; height: 40vw; background: #fdfaf3; }
 
 /* Frosted Glassmorphism */
 .glass {
@@ -47,7 +55,9 @@ body {
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
-    border-radius: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15); /* glowing upper contour */
+    border-radius: 32px; /* Massive radii per new gen spec */
+    box-shadow: 0 16px 40px rgba(0,0,0,0.6); /* Deep shadow */
     transition: var(--transition);
 }
 .glass:hover {
@@ -90,6 +100,10 @@ body {
     top: 1.25rem;
     left: 1.25rem;
     z-index: 100;
+    background: var(--sidebar-bg) !important;
+    color: var(--sidebar-text);
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
 .sidebar:hover {
@@ -101,9 +115,9 @@ body {
 }
 
 .logo { 
-    font-size: 1.15rem; 
+    font-size: 1.35rem; 
     font-weight: 800; 
-    color: var(--text-primary); 
+    color: var(--sidebar-text); 
     letter-spacing: -0.06em; 
     margin-bottom: 2.5rem;
     display: flex;
@@ -118,19 +132,19 @@ body {
     display: flex;
     align-items: center;
     padding: 0.7rem 0.85rem;
-    color: var(--text-secondary);
+    color: var(--sidebar-text-sec);
     text-decoration: none;
     border-radius: 12px;
     font-size: 0.85rem;
     font-weight: 500;
     transition: var(--transition);
 }
-.nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.04); }
-.nav-link.active { background: rgba(99, 102, 241, 0.1); color: var(--primary); font-weight: 600; }
+.nav-link:hover { color: var(--sidebar-text); background: rgba(255,255,255,0.05); }
+.nav-link.active { background: rgba(204, 233, 54, 0.1); color: var(--primary); font-weight: 600; }
 
 .main-content {
     margin-left: 310px;
-    padding: 3.5rem 4rem;
+    padding: 3rem 4rem;
     width: calc(100% - 310px);
     flex-grow: 1;
 }
@@ -140,29 +154,30 @@ body {
 .btn {
     width: 100%;
     padding: 0.7rem 1.25rem;
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid var(--glass-border);
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.85rem;
     transition: var(--transition);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background: rgba(255,255,255,0.03);
+    background: #ffffff;
     color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-.btn:hover { background: rgba(255,255,255,0.08); transform: translateY(-1px); }
+.btn:hover { background: #fafafa; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
 .btn-primary { 
-    background: var(--primary); 
+    background: #111111; 
     color: #ffffff; 
-    border: 1px solid var(--primary); 
-    box-shadow: 0 4px 8px var(--primary-glow);
+    border: 1px solid #000; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .btn-primary:hover { 
-    background: #4f46e5;
-    box-shadow: 0 6px 12px var(--primary-glow);
+    background: #222222;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 /* Executive Stat Cards */

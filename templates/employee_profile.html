@@ -2,146 +2,131 @@
 {% block title %}{{ employee.name }}'s Profile{% endblock %}
 
 {% block content %}
-<header style="margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1rem;">
-    <a href="{{ url_for('view_employees') }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; text-decoration: none; color: var(--text-secondary);">← Back</a>
-    <div>
-        <h1 style="font-size: 1.875rem; font-weight: 700;">Employee Profile</h1>
-        <p style="color: var(--text-secondary);">Detailed overview for {{ employee.name }}</p>
-    </div>
+<header style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.04em;">Employee Profile</h1>
+    <a href="{{ url_for('view_employees') }}" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">GO BACK TO THE LIST OF EMPLOYEES ↗</a>
 </header>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-    <!-- Identity Card -->
-    <div class="glass" style="padding: 2rem;">
-        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
-            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: white;">
-                {{ employee.name[:1]|upper }}
-            </div>
-            <div>
-                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem;">{{ employee.name }}</h2>
-                <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; gap: 0.5rem; align-items: center;">
-                    <span class="badge badge-info">{{ employee.role|upper }}</span>
-                    <span>{{ employee.profile.job_title if employee.profile else 'No Title' }}</span>
-                </div>
-            </div>
+<div style="display: grid; grid-template-columns: 350px 1fr 300px; gap: 1.5rem; margin-bottom: 1.5rem;">
+    <!-- Profile Card (Avatar) -->
+    <div class="glass aurora-hover" style="position: relative; height: 350px; border-radius: 32px; overflow: hidden; background: linear-gradient(to bottom right, #111, #222); padding: 0;">
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10rem; font-weight: 800; color: rgba(255,255,255,0.02); user-select: none;">
+            {{ employee.name[:1]|upper }}
         </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-            <div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Email Address</div>
-                <div style="font-weight: 500;">{{ employee.email }}</div>
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Department</div>
-                <div style="font-weight: 500;">{{ employee.profile.dept.name if employee.profile and employee.profile.dept else 'Unassigned' }}</div>
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Contact Number</div>
-                <div style="font-weight: 500;">{{ employee.profile.contact if employee.profile and employee.profile.contact else '—' }}</div>
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Joining Date</div>
-                <div style="font-weight: 500;">{{ employee.profile.joining_date.strftime('%Y-%m-%d') if employee.profile and employee.profile.joining_date else '—' }}</div>
-            </div>
-            <div style="grid-column: span 2;">
-                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Physical Address</div>
-                <div style="font-weight: 500;">{{ employee.profile.address if employee.profile and employee.profile.address else '—' }}</div>
-            </div>
+        <div style="position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem; background: rgba(10,10,12,0.7); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-radius: 20px; padding: 1.25rem; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.15rem; color: var(--text-primary);">{{ employee.name }}</h2>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">{{ employee.profile.job_title if employee.profile else employee.role|upper }}</div>
         </div>
     </div>
 
-    <!-- Compensation Card -->
-    <div class="glass" style="padding: 2rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-            Compensation Structure
-        </h2>
+    <!-- Compensation Widget (Working Format style) -->
+    <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Compensation</h3>
+            <span style="color: var(--text-muted); font-size: 1.25rem;">⋮</span>
+        </div>
         {% set ss = employee.profile.salary_structure if employee.profile else None %}
+        {% set net_pay = ((ss.base_salary or 0) + (ss.allowances or 0) - (ss.deductions or 0)) if ss else 0 %}
         
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--glass-border);">
-                <span style="color: var(--text-secondary);">Base Salary</span>
-                <span style="font-weight: 700;">₹{{ "{:,.2f}".format(ss.base_salary or 0 if ss else 0) }}</span>
+        <div style="position: relative; width: 180px; height: 180px; border-radius: 50%; border: 14px solid rgba(255,255,255,0.05); border-top-color: var(--primary); border-right-color: #a855f7; display: flex; align-items: center; justify-content: center; transform: rotate(-45deg);">
+            <div style="transform: rotate(45deg); text-align: center;">
+                <div style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">₹{{ "{:,.0f}".format(net_pay) }}</div>
+                <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.05em;">NET PAY</div>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                <span style="color: var(--text-secondary);">Allowances</span>
-                <span style="color: var(--success); font-weight: 600;">+₹{{ "{:,.2f}".format(ss.allowances or 0 if ss else 0) }}</span>
+        </div>
+        
+        <div style="display: flex; gap: 1.5rem; margin-top: 2rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+            <div style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem;"><span style="color: var(--primary); font-size: 1.2rem;">●</span> BASE</div>
+            <div style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem;"><span style="color: #a855f7; font-size: 1.2rem;">●</span> ALW</div>
+            <div style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem;"><span style="color: #f3f4f6; font-size: 1.2rem;">●</span> DED</div>
+        </div>
+    </div>
+
+    <!-- Recent Leaves Widget (Onboarding Tasks style) -->
+    <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Leave Requests</h3>
+            <span style="font-size: 1.75rem; font-weight: 800;">{{ recent_leaves|length }}</span>
+        </div>
+        <div style="width: 100%; height: 4px; background: #e5e5e5; border-radius: 2px; margin-bottom: 2rem; overflow: hidden;">
+            <div style="width: 30%; height: 100%; background: var(--primary);"></div>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% for leave in recent_leaves[:4] %}
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">🌴</div>
+                <div style="flex-grow: 1;">
+                    <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">{{ leave.start_date.strftime('%b %d') }} - {{ leave.end_date.strftime('%b %d') }}</div>
+                    <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);">{{ leave.status }}</div>
+                </div>
+                <div style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid {% if leave.status == 'Approved' %}var(--text-primary){% else %}#d1d5db{% endif %}; display: flex; align-items: center; justify-content: center;">
+                    {% if leave.status == 'Approved' %}<div style="width: 10px; height: 10px; border-radius: 50%; background: var(--text-primary);"></div>{% endif %}
+                </div>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
-                <span style="color: var(--text-secondary);">Deductions</span>
-                <span style="color: var(--danger); font-weight: 600;">-₹{{ "{:,.2f}".format(ss.deductions or 0 if ss else 0) }}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
-                <span style="font-weight: 800; font-size: 1.1rem; color: var(--primary);">Estimated Net Pay</span>
-                <span style="font-weight: 800; font-size: 1.25rem; color: var(--primary);">
-                    ₹{{ "{:,.2f}".format(((ss.base_salary or 0) + (ss.allowances or 0) - (ss.deductions or 0)) if ss else 0) }}
-                </span>
-            </div>
+            {% else %}
+            <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 2rem 0; font-weight: 500;">No leaves recorded.</div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-    <!-- Recent Leaves -->
-    <div class="glass" style="padding: 2rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Recent Leave Requests</h2>
-        <div style="overflow-x: auto;">
-            <table class="payro-table" style="margin: 0;">
-                <thead>
-                    <tr>
-                        <th style="padding-left: 0;">PERIOD</th>
-                        <th>DURATION</th>
-                        <th style="padding-right: 0;">STATUS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for leave in recent_leaves %}
-                    <tr>
-                        <td style="padding-left: 0; font-size: 0.85rem;">{{ leave.start_date }} to {{ leave.end_date }}</td>
-                        <td style="font-size: 0.85rem;">{{ (leave.end_date - leave.start_date).days + 1 }} Days</td>
-                        <td style="padding-right: 0;">
-                            <span class="badge {% if leave.status == 'Approved' %}badge-success{% elif leave.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}">
-                                {{ leave.status }}
-                            </span>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="3" style="padding: 2rem 0; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No leave history found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Disbursements Timeline -->
+<div class="glass aurora-hover" style="border-radius: 32px; padding: 2.5rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3.5rem;">
+        <button class="btn" style="width: auto; padding: 0.5rem 1.25rem; border-radius: 20px; background: rgba(255,255,255,0.05); color: white; border: none;">← PREV</button>
+        <h3 style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em;">Disbursements Timeline</h3>
+        <button class="btn" style="width: auto; padding: 0.5rem 1.25rem; border-radius: 20px; background: rgba(255,255,255,0.05); color: white; border: none;">NEXT →</button>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; position: relative; padding-bottom: 1rem;">
+        <!-- Line -->
+        <div style="position: absolute; top: 1.7rem; left: 2rem; right: 2rem; height: 2px; background: rgba(0,0,0,0.06); z-index: 0;"></div>
+        
+        {% for pr in recent_payrolls[:6] %}
+        <div style="position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 100px;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.75rem;">{{ pr.month }}/{{ pr.year }}</div>
+            <div style="width: 14px; height: 14px; border-radius: 50%; background: var(--text-primary); border: 3px solid #111; box-shadow: 0 0 0 1px rgba(0,0,0,0.1); margin-bottom: 1rem;"></div>
+            <div style="background: #ffffff; color: #111; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem; font-weight: 800;">
+                ₹{{ "{:,.0f}".format(pr.net_amount) }}
+            </div>
         </div>
+        {% else %}
+        <div style="width: 100%; text-align: center; color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">No recent disbursements to show.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Bottom Grid -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+    <!-- Base Salary -->
+    <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0));">
+        <h4 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.04em;">₹{{ "{:,.0f}".format(ss.base_salary or 0 if ss else 0) }}</h4>
+        <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 2rem; letter-spacing: 0.02em;">BASE SALARY<br>CURRENT STRUCTURE</div>
+        <div style="width: 100%; height: 4px; background: linear-gradient(to right, #34d399, var(--primary)); border-radius: 2px;"></div>
+    </div>
+    
+    <!-- Allowances -->
+    <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(0,0,0,0));">
+        <h4 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.04em; color: #f97316;">₹{{ "{:,.0f}".format(ss.allowances or 0 if ss else 0) }}</h4>
+        <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #fdba74; margin-bottom: 2rem; letter-spacing: 0.02em;">TOTAL ALLOWANCES<br>APPLIED</div>
+        <button class="btn" style="padding: 0.6rem; border-radius: 16px; background: rgba(255,255,255,0.1); color: #fff; border: none; box-shadow: none;">VIEW ALL</button>
     </div>
 
-    <!-- Recent Payroll -->
-    <div class="glass" style="padding: 2rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Recent Disbursements</h2>
-        <div style="overflow-x: auto;">
-            <table class="payro-table" style="margin: 0;">
-                <thead>
-                    <tr>
-                        <th style="padding-left: 0;">PERIOD</th>
-                        <th>NET AMOUNT</th>
-                        <th style="padding-right: 0;">STATUS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for pr in recent_payrolls %}
-                    <tr>
-                        <td style="padding-left: 0; font-size: 0.85rem;">{{ pr.month }}/{{ pr.year }}</td>
-                        <td style="font-weight: 700; color: var(--primary);">₹{{ "{:,.2f}".format(pr.net_amount) }}</td>
-                        <td style="padding-right: 0;">
-                            <span class="badge badge-success">● {{ pr.status }}</span>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="3" style="padding: 2rem 0; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No payroll history found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- Deductions -->
+    <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; background: var(--card-bg);">
+        <h4 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.04em; color: #f8fafc;">₹{{ "{:,.0f}".format(ss.deductions or 0 if ss else 0) }}</h4>
+        <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 2rem; letter-spacing: 0.02em;">DEDUCTIONS<br>APPLIED</div>
+        <button class="btn" style="padding: 0.6rem; border-radius: 16px; background: rgba(255,255,255,0.1); color: #fff; border: none; box-shadow: none;">VIEW ALL</button>
+    </div>
+
+    <!-- Dept/Details -->
+    <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0,0,0,0)); display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="font-size: 1.75rem; font-weight: 800; line-height: 1.1; color: #c7d2fe; letter-spacing: -0.03em;">{{ employee.profile.dept.name if employee.profile and employee.profile.dept else 'Unassigned' }}</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: #818cf8; margin-top: 0.5rem; letter-spacing: 0.02em;">DEPARTMENT</div>
+        
+        <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #a5b4fc;">JOINED: {{ employee.profile.joining_date.strftime('%Y') if employee.profile and employee.profile.joining_date else '—' }}</span>
         </div>
     </div>
 </div>

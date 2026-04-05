@@ -20,8 +20,8 @@
 
 <div style="margin-bottom:1.5rem;">
     <input type="text" id="emp-search" placeholder="🔍 Search by name, email, role..." 
-        style="max-width:400px; padding:0.65rem 1rem; background:rgba(255,255,255,0.05); 
-        border:1px solid var(--glass-border); border-radius:0.5rem; color:white; width:100%; outline:none;">
+        style="max-width:400px; padding:0.65rem 1rem; background:rgba(255,255,255,0.03); 
+        border:1px solid var(--glass-border); border-radius:12px; color:white; width:100%; outline:none; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
 </div>
 
 <div class="glass" style="padding: 2rem;">
@@ -62,21 +62,21 @@
 </div>
 
 <!-- Add Modal -->
-<div id="addModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
-    <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark);">
+<div id="addModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark); border-radius: 32px;">
         <h2 style="margin-bottom: 1.5rem;">Add Employee</h2>
         <form action="{{ url_for('view_employees') }}" method="POST">
             <div class="input-group">
-                <input type="text" name="name" placeholder="Full Name" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+                <input type="text" name="name" placeholder="Full Name" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;">
             </div>
             <div class="input-group">
-                <input type="email" name="email" placeholder="Email" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+                <input type="email" name="email" placeholder="Email" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;">
             </div>
             <div class="input-group">
-                <input type="password" name="password" placeholder="Initial Password" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: white;">
+                <input type="password" name="password" placeholder="Initial Password" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;">
             </div>
             <div class="input-group">
-                <select name="dept_id" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                <select name="dept_id" style="width: 100%; padding: 0.85rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 12px; outline: none;">
                     <option value="">Select Department</option>
                     {% for dept in departments %}
                     <option value="{{ dept.id }}">{{ dept.name }}</option>
@@ -84,7 +84,7 @@
                 </select>
             </div>
             <div class="input-group">
-                <select name="role" class="glass" style="width: 100%; padding: 0.85rem; background: rgba(15, 23, 42, 1); color: white; border: 1px solid var(--glass-border); border-radius: 0.5rem;">
+                <select name="role" style="width: 100%; padding: 0.85rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 12px; outline: none;">
                     <option value="employee">Employee</option>
                     <option value="hr">HR</option>
                     <option value="accounting">Accounting</option>

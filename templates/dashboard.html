@@ -3,49 +3,51 @@
 
 {% block content %}
 <header style="margin-bottom: 3.5rem;">
-    <p style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Intelligence Overview</p>
-    <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em;">Welcome, {{ user.name }}</h1>
+    <p style="color: var(--primary); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; color: #818cf8;">Intelligence Overview</p>
+    <h1 style="font-size: 2.75rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text-primary);">Welcome, {{ current_user.name }}</h1>
 </header>
 
 <div class="grid-stats">
-    <div class="stat-card glass aurora-hover fadeInUp" style="animation-delay: 0.1s;">
-        <div class="stat-label">Workforce</div>
-        <div class="stat-value" data-countup="{{ total_employees }}">0</div>
-        <div style="color: var(--success); font-size: 0.75rem; font-weight: 700; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 32px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0,0,0,0)); animation-delay: 0.1s;">
+        <div class="stat-label" style="color: #a5b4fc;">Workforce</div>
+        <div class="stat-value" data-countup="{{ total_employees }}" style="color: #ffffff;">0</div>
+        <div style="color: #818cf8; font-size: 0.75rem; font-weight: 700; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
             <div style="width: 7px; height: 7px; background: currentColor; border-radius: 50%;"></div>
-            Active
+            Active Members
         </div>
     </div>
-    <div class="stat-card glass aurora-hover fadeInUp" style="animation-delay: 0.2s;">
+    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 32px; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0)); animation-delay: 0.2s;">
         <div class="stat-label">Expenditure</div>
-        <div class="stat-value" data-countup="{{ total_payroll|int }}" data-prefix="₹">0</div>
-        <div style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 1rem;">Current Period</div>
+        <div class="stat-value" data-countup="{{ total_payroll|int }}" data-prefix="₹" style="color: #ffffff;">0</div>
+        <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; margin-top: 1rem;">Current Period</div>
     </div>
-    <div class="stat-card glass aurora-hover fadeInUp" style="animation-delay: 0.3s;">
-        <div class="stat-label">Pending</div>
-        <div class="stat-value" data-countup="{{ pending_leaves }}">0</div>
-        <div style="color: var(--warning); font-size: 0.75rem; font-weight: 700; margin-top: 1rem;">Leave Requests</div>
+    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 32px; background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(0,0,0,0)); animation-delay: 0.3s;">
+        <div class="stat-label" style="color: #fdba74;">Pending</div>
+        <div class="stat-value" data-countup="{{ pending_leaves }}" style="color: #ffffff;">0</div>
+        <div style="color: #fb923c; font-size: 0.75rem; font-weight: 700; margin-top: 1rem;">Leave Requests</div>
     </div>
     
-    <div class="stat-card glass ai-card fadeInUp" style="animation-delay: 0.4s;">
-        <div class="stat-label" style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.2rem;">✦</span> AI INSIGHTS
+    <div class="stat-card glass ai-card fadeInUp" style="border-radius: 32px; background: var(--card-bg); animation-delay: 0.4s; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.2), transparent 60%); pointer-events: none; z-index: 0;"></div>
+        <div style="position: relative; z-index: 1;">
+            <div class="stat-label" style="color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem; color: #818cf8;">✦</span> AI INSIGHTS
+            </div>
+            <div id="ai-narrative" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; margin: 1rem 0; line-height: 1.6; min-height: 48px;">
+                Monthly intelligence summary.
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button id="gen-report-btn" onclick="generateReport()" class="btn btn-primary" style="padding: 0.6rem 1.25rem; font-size: 0.75rem; border-radius: 12px; width: auto;">
+                    Generate
+                </button>
+                <a id="dl-report-btn" href="/ai/monthly-report/pdf" class="btn" style="display: none; padding: 0.6rem 1.25rem; font-size: 0.75rem; border-radius: 12px; width: auto;">
+                    PDF
+                </a>
+            </div>
         </div>
-        <div id="ai-narrative" style="font-size: 0.85rem; color: var(--text-secondary); margin: 1rem 0; line-height: 1.6; min-height: 48px;">
-            Monthly intelligence summary.
-        </div>
-        <div style="display: flex; gap: 0.75rem;">
-            <button id="gen-report-btn" onclick="generateReport()" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
-                Generate
-            </button>
-            <a id="dl-report-btn" href="/ai/monthly-report/pdf" class="btn" style="display: none; padding: 0.5rem 1rem; font-size: 0.8rem;">
-                PDF
-            </a>
-        </div>
-    </div>
 </div>
 
-<div class="glass" style="padding: 2rem;">
+<div class="glass" style="padding: 2.5rem; border-radius: 32px;">
     <h2 style="font-size: 1.25rem; margin-bottom: 2rem; font-weight: 700;">Recent Transactions</h2>
     <div style="overflow-x: auto;">
         <table class="payro-table">
