@@ -7,7 +7,7 @@
     <a href="{{ url_for('view_employees') }}" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">GO BACK TO THE LIST OF EMPLOYEES ↗</a>
 </header>
 
-<div style="display: grid; grid-template-columns: 350px 1fr 300px; gap: 1.5rem; margin-bottom: 1.5rem;">
+<div style="display: grid; grid-template-columns: minmax(280px, 1.2fr) minmax(280px, 1fr) minmax(280px, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
     <!-- Profile Card (Avatar) -->
     <div class="glass aurora-hover" style="position: relative; height: 350px; border-radius: 32px; overflow: hidden; background: linear-gradient(to bottom right, #111, #222); padding: 0;">
         <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14rem; font-weight: 900; color: rgba(255,255,255,0.08); user-select: none; transform: translateY(-1rem);">
@@ -78,12 +78,12 @@
 <!-- Disbursements Timeline -->
 <div class="glass aurora-hover" style="border-radius: 32px; padding: 2.5rem; margin-bottom: 1.5rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3.5rem;">
-        <button class="btn" style="width: auto; padding: 0.5rem 1.25rem; border-radius: 20px; background: rgba(255,255,255,0.05); color: white; border: none;">← PREV</button>
+        <button class="btn" style="width: auto; padding: 0.5rem 1.25rem; border-radius: 20px; background: rgba(255,255,255,0.05); color: white; border: none;" onclick="document.getElementById('timeline-container').scrollBy({left: -200, behavior: 'smooth'})">← PREV</button>
         <h3 style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em;">Disbursements Timeline</h3>
-        <button class="btn" style="width: auto; padding: 0.5rem 1.25rem; border-radius: 20px; background: rgba(255,255,255,0.05); color: white; border: none;">NEXT →</button>
+        <button class="btn" style="width: auto; padding: 0.5rem 1.25rem; border-radius: 20px; background: rgba(255,255,255,0.05); color: white; border: none;" onclick="document.getElementById('timeline-container').scrollBy({left: 200, behavior: 'smooth'})">NEXT →</button>
     </div>
     
-    <div style="display: flex; justify-content: space-between; position: relative; padding-bottom: 1rem;">
+    <div id="timeline-container" style="display: flex; justify-content: space-between; position: relative; padding-bottom: 1rem; overflow-x: auto; scrollbar-width: none;">
         <!-- Line -->
         <div style="position: absolute; top: 1.7rem; left: 2rem; right: 2rem; height: 2px; background: rgba(0,0,0,0.06); z-index: 0;"></div>
         
@@ -143,14 +143,14 @@
     <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(0,0,0,0));">
         <h4 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.04em; color: #f97316;">₹{{ "{:,.0f}".format(ss.allowances or 0 if ss else 0) }}</h4>
         <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #fdba74; margin-bottom: 2rem; letter-spacing: 0.02em;">TOTAL ALLOWANCES<br>APPLIED</div>
-        <button class="btn" style="padding: 0.6rem; border-radius: 16px; background: rgba(255,255,255,0.1); color: #fff; border: none; box-shadow: none;">VIEW ALL</button>
+        <button class="btn" style="padding: 0.6rem; border-radius: 16px; background: rgba(255,255,255,0.1); color: #fff; border: none; box-shadow: none;" onclick="alert('Detailed component records are securely managed by the payroll processing team. View the full statements in the Financial Center.')">VIEW ALL</button>
     </div>
 
     <!-- Deductions -->
     <div class="glass aurora-hover" style="border-radius: 32px; padding: 2rem; background: var(--card-bg);">
         <h4 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.04em; color: #f8fafc;">₹{{ "{:,.0f}".format(ss.deductions or 0 if ss else 0) }}</h4>
         <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 2rem; letter-spacing: 0.02em;">DEDUCTIONS<br>APPLIED</div>
-        <button class="btn" style="padding: 0.6rem; border-radius: 16px; background: rgba(255,255,255,0.1); color: #fff; border: none; box-shadow: none;">VIEW ALL</button>
+        <button class="btn" style="padding: 0.6rem; border-radius: 16px; background: rgba(255,255,255,0.1); color: #fff; border: none; box-shadow: none;" onclick="alert('Detailed component records are securely managed by the payroll processing team. View the full statements in the Financial Center.')">VIEW ALL</button>
     </div>
 
     <!-- Dept/Details -->

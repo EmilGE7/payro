@@ -46,8 +46,8 @@ body {
     position: absolute;
     border-radius: 50%;
 }
-.blob-1 { top: -20%; left: -10%; width: 50vw; height: 50vw; background: #e3dec9; }
-.blob-2 { bottom: -20%; right: -10%; width: 40vw; height: 40vw; background: #fdfaf3; }
+.blob-1 { top: -20%; left: -10%; width: 50vw; height: 50vw; background: #1e1b4b; }
+.blob-2 { bottom: -20%; right: -10%; width: 40vw; height: 40vw; background: #312e81; }
 
 /* Frosted Glassmorphism */
 .glass {
