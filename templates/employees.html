@@ -39,17 +39,17 @@
             <tbody>
                 {% for emp in employees %}
                 <tr data-employee-id="{{ emp.id }}" data-searchable="{{ emp.name }} {{ emp.email }} {{ emp.role }} {{ emp.profile.dept.name if emp.profile and emp.profile.dept else '' }}">
-                    <td>
+                    <td data-label="Staff">
                         <div style="font-weight: 600;">{{ emp.name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ emp.email }}</div>
                     </td>
-                    <td><span class="badge badge-info">{{ emp.role|upper }}</span></td>
-                    <td>{{ emp.profile.dept.name if emp.profile and emp.profile.dept else 'Unassigned' }}</td>
-                    <td style="padding: 1rem;">
+                    <td data-label="Role"><span class="badge badge-info">{{ emp.role|upper }}</span></td>
+                    <td data-label="Department">{{ emp.profile.dept.name if emp.profile and emp.profile.dept else 'Unassigned' }}</td>
+                    <td data-label="Status" style="padding: 1rem;">
                         <span style="color: var(--success);">● Active</span>
                         <span id="risk-{{ emp.id }}" style="display:none; margin-left:0.4rem;"></span>
                     </td>
-                    <td>
+                    <td data-label="Actions">
                         <div style="display: flex; gap: 0.75rem;">
                             <a href="{{ url_for('view_employee_profile', id=emp.id) }}" style="color: #818CF8; font-weight: 700; text-decoration: none; font-size: 0.85rem;">View Profile</a>
                         </div>

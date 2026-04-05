@@ -48,16 +48,16 @@
             <tbody>
                 {% for req in pending_requests %}
                 <tr>
-                    <td style="font-weight: 600; color: #fff;">{{ req.user.name }}</td>
-                    <td>
+                    <td data-label="Staff" style="font-weight: 600; color: #fff;">{{ req.user.name }}</td>
+                    <td data-label="Type">
                         <span class="badge {% if req.change_type == 'increment' %}badge-success{% else %}badge-danger{% endif %}">
                             {{ req.change_type|upper }}
                         </span>
                     </td>
-                    <td style="font-weight: 700; color: #fff;">₹{{ "{:,.2f}".format(req.amount) }}</td>
-                    <td style="color: var(--text-secondary); max-width: 250px; font-size: 0.85rem;">{{ req.reason }}</td>
-                    <td>
-                        <form action="{{ url_for('approve_salary_change') }}" method="POST" style="display: flex; gap: 0.5rem;">
+                    <td data-label="Amount" style="font-weight: 700; color: #fff;">₹{{ "{:,.2f}".format(req.amount) }}</td>
+                    <td data-label="Reason" style="color: var(--text-secondary); max-width: 250px; font-size: 0.85rem;">{{ req.reason }}</td>
+                    <td data-label="Actions">
+                        <form action="{{ url_for('approve_salary_change') }}" method="POST" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
                             <input type="hidden" name="request_id" value="{{ req.id }}">
                             <button type="submit" name="action" value="Approved" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.75rem; width: auto;">Approve</button>
                             <button type="submit" name="action" value="Rejected" class="btn glass" style="padding: 0.5rem 1rem; font-size: 0.75rem; width: auto; color: #fff;">Reject</button>
@@ -94,20 +94,20 @@
             <tbody>
                 {% for record in records %}
                 <tr class="pay-row" data-searchable="{{ record.user.name }} {{ record.month }}/{{ record.year }}">
-                    <td>
+                    <td data-label="Staff">
                         <div style="font-weight: 600;">{{ record.user.name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">Period: {{ record.month }}/{{ record.year }}</div>
                     </td>
-                    <td style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">₹{{ "{:,.2f}".format(record.net_amount) }}</td>
-                    <td>
+                    <td data-label="Paid" style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">₹{{ "{:,.2f}".format(record.net_amount) }}</td>
+                    <td data-label="Details">
                         <button class="btn glass" 
                             style="width:auto; padding:0.4rem 0.8rem; font-size:0.75rem; color:#fff;" 
                             onclick="explainPay({{ record.id }})">Explain Components ✦</button>
                     </td>
-                    <td>
+                    <td data-label="Status">
                         <span class="badge badge-success">● {{ record.status }}</span>
                     </td>
-                    <td>
+                    <td data-label="Actions">
                         <a href="{{ url_for('download_payslip', id=record.id) }}" 
                             class="badge badge-info" style="text-decoration: none;">⬇ DOWNLOAD PDF</a>
                     </td>

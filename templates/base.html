@@ -14,7 +14,7 @@
         <div class="blob blob-2"></div>
     </div>
     {% if current_user.is_authenticated %}
-    <nav class="sidebar glass aurora-hover">
+    <nav class="sidebar glass aurora-hover desktop-only">
         <div class="logo">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="32" height="32" rx="8" fill="url(#logo_paint)"/>
@@ -70,6 +70,43 @@
                 <span style="font-size: 1rem;">↪</span> Sign Out
             </a>
         </div>
+    </nav>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav mobile-only">
+        {% if current_user.role != 'employee' %}
+        <a href="{{ url_for('dashboard') }}" class="bottom-nav-link {{ 'active' if request.path == url_for('dashboard') else '' }}">
+            <span>📊</span>
+            Dashboard
+        </a>
+        {% if current_user.role in ['admin', 'hr'] %}
+        <a href="{{ url_for('view_employees') }}" class="bottom-nav-link {{ 'active' if request.path == url_for('view_employees') else '' }}">
+            <span>👥</span>
+            Staff
+        </a>
+        {% endif %}
+        <a href="{{ url_for('view_attendance') }}" class="bottom-nav-link {{ 'active' if request.path == url_for('view_attendance') else '' }}">
+            <span>📅</span>
+            Time
+        </a>
+        <a href="{{ url_for('view_payroll') }}" class="bottom-nav-link {{ 'active' if request.path == url_for('view_payroll') else '' }}">
+            <span>💰</span>
+            Payroll
+        </a>
+        {% else %}
+        <a href="{{ url_for('view_employee_profile', id=current_user.id) }}" class="bottom-nav-link {{ 'active' if 'employee' in request.path else '' }}">
+            <span>👤</span>
+            Profile
+        </a>
+        <a href="{{ url_for('view_attendance') }}" class="bottom-nav-link {{ 'active' if request.path == url_for('view_attendance') else '' }}">
+            <span>📅</span>
+            Leaves
+        </a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="bottom-nav-link" style="color: #ff4757;">
+            <span>🚪</span>
+            Exit
+        </a>
     </nav>
     
     <main class="main-content">

@@ -63,17 +63,17 @@
             <tbody>
                 {% for act in recent_activities %}
                 <tr>
-                    <td style="font-weight: 600; color: var(--text-primary);">
+                    <td data-label="Staff" style="font-weight: 600; color: var(--text-primary);">
                         {{ act.user.name if act.user else 'System / Archived' }}
                     </td>
-                    <td>{{ act.month }}/{{ act.year }}</td>
-                    <td style="font-weight: 700;">₹{{ "{:,.2f}".format(act.net_amount) }}</td>
-                    <td>
+                    <td data-label="Period">{{ act.month }}/{{ act.year }}</td>
+                    <td data-label="Paid" style="font-weight: 700;">₹{{ "{:,.2f}".format(act.net_amount) }}</td>
+                    <td data-label="Status">
                         <span class="badge {% if act.status == 'Paid' %}badge-success{% elif act.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}">
                             {{ act.status }}
                         </span>
                     </td>
-                    <td style="color: var(--text-secondary);">{{ act.paid_date.strftime('%Y-%m-%d') if act.paid_date else '—' }}</td>
+                    <td data-label="Date" style="color: var(--text-secondary);">{{ act.paid_date.strftime('%Y-%m-%d') if act.paid_date else '—' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

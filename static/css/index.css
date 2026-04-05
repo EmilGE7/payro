@@ -22,6 +22,12 @@
     --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.mobile-only { display: none !important; }
+@media (max-width: 768px) {
+    .mobile-only { display: block !important; }
+    .desktop-only { display: none !important; }
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
 
 body {
@@ -150,6 +156,47 @@ body {
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+/* Bottom Navigation (Mobile) */
+.bottom-nav {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    height: 64px;
+    background: rgba(15, 15, 20, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 1rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.bottom-nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.65rem;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.bottom-nav-link.active {
+    color: var(--primary);
+}
+
+.bottom-nav-link span {
+    font-size: 1.25rem;
+}
+
 .main-content {
     margin-left: 310px;
     padding: 3rem 4rem;
@@ -218,11 +265,40 @@ body {
 }
 
 /* Table Design Refined */
-.payro-table td { 
-    padding: 1rem 1.25rem; 
-    color: var(--text-secondary);
-}
 .payro-table tr:hover td { color: var(--text-primary); }
+
+/* Responsive Table (Card Mode) */
+@media (max-width: 768px) {
+    .payro-table thead { display: none; }
+    .payro-table, .payro-table tbody, .payro-table tr, .payro-table td { 
+        display: block; 
+        width: 100%; 
+    }
+    .payro-table tr { 
+        margin-bottom: 1.5rem; 
+        border: 1px solid var(--glass-border); 
+        border-radius: 20px; 
+        background: rgba(255, 255, 255, 0.02);
+        padding: 1rem;
+    }
+    .payro-table td { 
+        text-align: right; 
+        padding: 0.75rem 0; 
+        position: relative; 
+        border: none !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .payro-table td::before { 
+        content: attr(data-label); 
+        float: left; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 0.65rem; 
+        color: var(--text-secondary);
+    }
+}
 
 /* Unified Responsiveness */
 @media (max-width: 1400px) {
@@ -234,9 +310,16 @@ body {
     .sidebar { width: 250px; }
 }
 @media (max-width: 768px) {
-    .sidebar { width: calc(100% - 2.5rem); height: auto; position: relative; top: 0; left: 0; margin: 1.25rem; display: flex; flex-wrap: wrap; }
-    .main-content { margin-left: 0; width: 100%; padding: 1.5rem; }
+    .sidebar { display: none; }
+    .bottom-nav { display: flex; }
+    .main-content { 
+        margin-left: 0; 
+        width: 100%; 
+        padding: 1.5rem; 
+        padding-bottom: 6rem; /* space for bottom nav */
+    }
     .grid-stats { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.75rem !important; }
 }
 
 /* Executive Login Layout */

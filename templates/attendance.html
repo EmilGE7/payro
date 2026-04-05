@@ -28,13 +28,13 @@
                 {% set target_list = my_leaves if current_user.role == 'employee' else (pending_leaves if pending_leaves else []) %}
                 {% for leave in target_list %}
                 <tr>
-                    <td>
+                    <td data-label="Staff">
                         <div style="font-weight: 600;">{{ leave.user.name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ leave.user.role|upper }}</div>
                     </td>
-                    <td>{{ leave.start_date }} to {{ leave.end_date }}</td>
-                    <td style="color: var(--text-secondary); font-size: 0.85rem;">"{{ leave.reason }}"</td>
-                    <td>
+                    <td data-label="Dates">{{ leave.start_date }} to {{ leave.end_date }}</td>
+                    <td data-label="Reason" style="color: var(--text-secondary); font-size: 0.85rem;">"{{ leave.reason }}"</td>
+                    <td data-label="Status">
                         <span class="badge {% if leave.status == 'Approved' %}badge-success{% elif leave.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}">
                             {{ leave.status }}
                         </span>
@@ -48,9 +48,9 @@
                         {% endif %}
                     </td>
                     {% if current_user.role in ['admin', 'hr'] %}
-                    <td>
+                    <td data-label="Actions">
                         {% if leave.status == 'Pending' %}
-                        <form action="{{ url_for('view_attendance') }}" method="POST" style="display: flex; gap: 0.5rem;">
+                        <form action="{{ url_for('view_attendance') }}" method="POST" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
                             <input type="hidden" name="leave_id" value="{{ leave.id }}">
                             <button type="submit" name="action" value="Approved" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; width: auto;">Approve</button>
                             <button type="submit" name="action" value="Rejected" class="btn glass" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; width: auto; color: var(--danger);">Reject</button>
