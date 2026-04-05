@@ -2,10 +2,10 @@
     --primary: #6366f1;
     --primary-glow: rgba(99, 102, 241, 0.4);
     
-    --bg-light: #0d0d12;
-    --sidebar-bg: #050508;
+    --bg-light: #12121a;
+    --sidebar-bg: #0a0a0f;
     
-    --card-bg: rgba(22, 22, 28, 0.6);
+    --card-bg: rgba(30, 30, 38, 0.7);
     --glass-border: rgba(255, 255, 255, 0.08); /* machined edge */
     --glass-border-hover: rgba(255, 255, 255, 0.15);
     
@@ -46,8 +46,8 @@ body {
     position: absolute;
     border-radius: 50%;
 }
-.blob-1 { top: -20%; left: -10%; width: 50vw; height: 50vw; background: #1e1b4b; }
-.blob-2 { bottom: -20%; right: -10%; width: 40vw; height: 40vw; background: #312e81; }
+.blob-1 { top: -20%; left: -10%; width: 50vw; height: 50vw; background: #e3dec9; }
+.blob-2 { bottom: -20%; right: -10%; width: 40vw; height: 40vw; background: #fdfaf3; }
 
 /* Frosted Glassmorphism */
 .glass {
