@@ -2,32 +2,41 @@
 {% block title %}Financial Operations{% endblock %}
 
 {% block content %}
-<header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <h1 style="font-size: 1.875rem; font-weight: 700;">Financial Payroll Center</h1>
-        <p style="color: var(--text-secondary);">Salary processing and organization disbursements.</p>
-    </div>
-    <div style="display: flex; gap: 1rem;">
-        <a href="{{ url_for('export_payroll') }}" class="btn glass" 
-            style="width:auto; padding:0.75rem 1.5rem; text-decoration:none; color:white; font-size:0.875rem;">
-            📄 Export Payroll (Excel)
-        </a>
-        <button class="btn btn-primary" style="width: auto; padding: 0.75rem 1.5rem;" onclick="document.getElementById('processModal').style.display='flex'">Process Monthly Payroll</button>
+<header style="margin-bottom: 3.5rem;">
+    <p class="aurora-text" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 0.5rem;">Financial Operations</p>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 800; letter-spacing: -0.05em;">Payroll Center</h1>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{{ url_for('export_payroll') }}" class="btn glass" 
+                style="width:auto; padding:0.6rem 1.25rem; font-size: 0.75rem; border-radius: 12px; text-decoration: none; color: white;">
+                ⬇ Disbursement Log
+            </a>
+            <button class="btn btn-primary" style="width: auto; padding: 0.6rem 1.25rem; font-size: 0.75rem; border-radius: 12px;" onclick="document.getElementById('processModal').style.display='flex'">Execute Payroll Flow</button>
+        </div>
     </div>
 </header>
 
 <div class="grid-stats">
-    <div class="stat-card glass shadow-premium" style="border-radius: 32px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0,0,0,0));">
-        <div class="stat-label" style="color: #a5b4fc;">Total Monthly Payout</div>
-        <div class="stat-value" data-countup="{{ total_payout|int }}" data-prefix="₹" style="color: #ffffff;">0</div>
+    <div class="stat-card glass fadeInUp" style="animation-delay: 0.1s; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), transparent);">
+        <div class="stat-label">Total Monthly Payout</div>
+        <div class="stat-value" data-countup="{{ total_payout|int }}" data-prefix="₹">0</div>
+        <div style="margin-top: 1rem;">
+            <span class="badge badge-primary">Liquidity Flow</span>
+        </div>
     </div>
-    <div class="stat-card glass shadow-premium" style="border-radius: 32px; background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(0,0,0,0));">
-        <div class="stat-label" style="color: #fdba74;">Estimated Tax Burden</div>
-        <div class="stat-value" data-countup="{{ tax_est|int }}" data-prefix="₹" style="color: #ffffff;">0</div>
+    <div class="stat-card glass fadeInUp" style="animation-delay: 0.2s; background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), transparent);">
+        <div class="stat-label">Estimated Tax Liability</div>
+        <div class="stat-value" data-countup="{{ tax_est|int }}" data-prefix="₹">0</div>
+        <div style="margin-top: 1rem;">
+            <span class="badge badge-danger">Compliance Required</span>
+        </div>
     </div>
-    <div class="stat-card glass shadow-premium" style="border-radius: 32px; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0));">
-        <div class="stat-label" style="color: var(--text-secondary);">Bonuses Issued</div>
-        <div class="stat-value" data-countup="{{ bonuses_est|int }}" data-prefix="₹" style="color: #ffffff;">0</div>
+    <div class="stat-card glass fadeInUp" style="animation-delay: 0.3s; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), transparent);">
+        <div class="stat-label">Performance Bonuses</div>
+        <div class="stat-value" data-countup="{{ bonuses_est|int }}" data-prefix="₹">0</div>
+        <div style="margin-top: 1rem;">
+            <span class="badge badge-success">Growth Incentive</span>
+        </div>
     </div>
 </div>
 

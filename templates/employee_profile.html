@@ -2,9 +2,14 @@
 {% block title %}{{ employee.name }}'s Profile{% endblock %}
 
 {% block content %}
-<header style="margin-bottom: 2rem;">
-    <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.04em;">Employee Profile</h1>
-    <a href="{{ url_for('view_employees') }}" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">GO BACK TO THE LIST OF EMPLOYEES ↗</a>
+<header style="margin-bottom: 3.5rem;">
+    <p class="aurora-text" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 0.5rem;">Employee Profile</p>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 800; letter-spacing: -0.05em;">Personnel File</h1>
+        <a href="{{ url_for('view_employees') }}" class="btn glass" style="width: auto; padding: 0.6rem 1.25rem; font-size: 0.75rem; border-radius: 12px; text-decoration: none; color: white;">
+            ↗ Return to Directory
+        </a>
+    </div>
 </header>
 
 <style>
@@ -38,8 +43,8 @@
 
 <div class="profile-grid-top">
     <!-- Profile Card (Avatar) -->
-    <div class="glass aurora-hover" style="position: relative; height: 350px; border-radius: 32px; overflow: hidden; background: linear-gradient(to bottom right, #1a1a24, #12121a); padding: 0;">
-        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14rem; font-weight: 900; color: rgba(255,255,255,0.05); user-select: none; transform: translateY(-1rem);">
+    <div class="glass fadeInUp" style="position: relative; height: 350px; border-radius: 32px; overflow: hidden; background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent); padding: 0;">
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 16rem; font-weight: 900; background: linear-gradient(to bottom, rgba(255,255,255,0.08), transparent); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; user-select: none; transform: translateY(-2rem);">
             {{ employee.name[:1]|upper }}
         </div>
         <div style="position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem; background: rgba(15,15,25,0.8); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-radius: 20px; padding: 1.25rem; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
@@ -59,10 +64,10 @@
         {% set ss = employee.profile.salary_structure if employee.profile else None %}
         {% set net_pay = ((ss.base_salary or 0) + (ss.allowances or 0) - (ss.deductions or 0)) if ss else 0 %}
         
-        <div style="position: relative; width: 170px; height: 170px; border-radius: 50%; border: 14px solid rgba(255,255,255,0.05); border-top-color: var(--primary); border-right-color: #a855f7; display: flex; align-items: center; justify-content: center; transform: rotate(-45deg);">
+        <div style="position: relative; width: 170px; height: 170px; border-radius: 50%; border: 12px solid rgba(255,255,255,0.03); border-top-color: var(--primary); border-right-color: var(--secondary); display: flex; align-items: center; justify-content: center; transform: rotate(-45deg); box-shadow: 0 0 30px rgba(99, 102, 241, 0.1);">
             <div style="transform: rotate(45deg); text-align: center;">
-                <div style="font-size: 1.7rem; font-weight: 800; color: var(--text-primary);">₹{{ "{:,.0f}".format(net_pay) }}</div>
-                <div style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.05em;">NET PAY</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-primary); font-family: var(--font-heading);">₹{{ "{:,.0f}".format(net_pay) }}</div>
+                <div style="font-size: 0.6rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 0.1em;">NET COMPENSATION</div>
             </div>
         </div>
         

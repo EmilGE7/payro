@@ -1,13 +1,16 @@
 :root {
     --primary: #6366f1;
     --primary-glow: rgba(99, 102, 241, 0.4);
+    --secondary: #a855f7;
     
-    --bg-light: #12121a;
-    --sidebar-bg: #0a0a0f;
+    --bg-dark: #050508;
+    --bg-light: #0a0a0f;
+    --sidebar-bg: rgba(10, 10, 15, 0.6);
     
-    --card-bg: rgba(30, 30, 38, 0.7);
+    --card-bg: rgba(15, 15, 22, 0.4);
+    --glass-background: rgba(15, 15, 22, 0.45);
     --glass-border: rgba(255, 255, 255, 0.08); /* machined edge */
-    --glass-border-hover: rgba(255, 255, 255, 0.15);
+    --glass-border-bright: rgba(255, 255, 255, 0.15);
     
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
@@ -16,14 +19,13 @@
     --sidebar-text: #ffffff;
     --sidebar-text-sec: #94a3b8;
     
-    --warning: #ffa502;
-    --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
     
-    /* New Gen Design Tokens */
-    --glass-background: rgba(10, 10, 15, 0.45);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-border-bright: rgba(255, 255, 255, 0.15);
-    --accent-glow: 0 0 20px rgba(99, 102, 241, 0.25);
+    --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    --accent-glow: 0 0 30px rgba(99, 102, 241, 0.2);
     --font-heading: 'Outfit', 'Inter', system-ui, sans-serif;
 }
 
@@ -50,56 +52,55 @@ body {
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: -1;
     overflow: hidden;
-    filter: blur(100px);
-    opacity: 0.6;
+    filter: blur(120px);
+    opacity: 0.4;
+    background: #020205;
 }
 .blob {
     position: absolute;
     border-radius: 50%;
+    filter: blur(80px);
 }
-.blob-1 { top: -20%; left: -10%; width: 50vw; height: 50vw; background: #e3dec9; }
-.blob-2 { bottom: -20%; right: -10%; width: 40vw; height: 40vw; background: #fdfaf3; }
+.blob-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(99, 102, 241, 0.15), transparent 70%); }
+.blob-2 { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(168, 85, 247, 0.12), transparent 70%); }
 
 /* Frosted Glassmorphism */
 .glass {
-    background: var(--card-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: var(--glass-background);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
     border: 1px solid var(--glass-border);
-    border-top: 1px solid rgba(255, 255, 255, 0.15); /* glowing upper contour */
-    border-radius: 32px; /* Massive radii per new gen spec */
-    box-shadow: 0 16px 40px rgba(0,0,0,0.6); /* Deep shadow */
+    border-top: 1px solid var(--glass-border-bright);
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
     transition: var(--transition);
 }
 .glass:hover {
-    border-color: var(--glass-border-hover);
+    border-color: var(--glass-border-bright);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.6);
     transform: translateY(-2px);
 }
 
-/* Aurora Hover Borders - Professional Cut */
-.aurora-hover {
-    position: relative;
+/* Page Animations */
+.fadeInUp {
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.aurora-hover:hover {
-    border-color: transparent;
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-.aurora-hover:hover::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    padding: 0.5px; /* Extremely thin professional aurora */
-    border-radius: inherit;
-    background: linear-gradient(135deg, #6366f1, #a855f7, #6366f1);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    animation: aurora 3s linear infinite;
+
+/* Aurora Branding */
+.aurora-text {
+    background: linear-gradient(135deg, #f8fafc 0%, #a5b4fc 50%, #f8fafc 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 4s linear infinite;
 }
-@keyframes aurora {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
+@keyframes shine {
+    to { background-position: 200% center; }
 }
 
 /* Sidebar Navigation */
@@ -248,26 +249,56 @@ body {
     margin-bottom: 2.5rem; 
 }
 .stat-card { 
-    padding: 2rem; 
-    min-height: 180px;
+    padding: 2.25rem; 
+    border-radius: 24px !important;
+    position: relative;
+    overflow: hidden;
+}
+.stat-card::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 100px; height: 100px;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent 70%);
 }
 .stat-value { 
+    font-family: var(--font-heading);
     font-size: 2.5rem; 
-    font-weight: 900; 
-    letter-spacing: -0.07em; 
-    margin-top: 0.75rem;
+    font-weight: 800; 
+    letter-spacing: -0.05em; 
+    margin-top: 0.5rem;
+    color: var(--text-primary);
 }
 .stat-label { 
     font-size: 0.75rem; 
     color: var(--text-secondary); 
     font-weight: 700; 
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
 }
 
 .ai-card { 
-    background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.15), transparent);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.05));
+    border: 1px solid rgba(99, 102, 241, 0.2) !important;
 }
+
+/* Badges */
+.badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.badge-primary { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.2); }
+.badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
+.badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+.badge-info { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
 
 /* Table Design Refined */
 .payro-table tr:hover td { color: var(--text-primary); }
