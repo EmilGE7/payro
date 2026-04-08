@@ -6,7 +6,7 @@
     <title>Payro - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💼</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="bg-blobs">
@@ -15,10 +15,11 @@
     </div>
     {% if current_user.is_authenticated %}
     <nav class="sidebar glass aurora-hover desktop-only">
-        <div class="logo aurora-text">
-            <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="10" fill="url(#logo_paint)"/>
-                <path d="M12 9C11.4477 9 11 9.44772 11 10V22.5C11 22.7761 11.2239 23 11.5 23H13.5C13.7761 23 14 22.7761 14 22.5V19H17C19.7614 19 22 16.7614 22 14C22 11.2386 19.7614 9 17 9H12ZM14 11H17C18.6569 11 20 12.3431 20 14C20 15.6569 18.6569 17 17 17H14V11Z" fill="white"/>
+        <div class="logo">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="8" fill="url(#logo_paint)"/>
+                <path d="M11 10C11 9.44772 11.4477 9 12 9H17C19.7614 9 22 11.2386 22 14C22 16.7614 19.7614 19 17 19H14V22.5C14 22.7761 13.7761 23 13.5 23H11.5C11.2239 23 11 22.7761 11 22.5V10Z" fill="white"/>
+                <circle cx="17" cy="14" r="2.5" fill="#050508"/>
                 <defs>
                     <linearGradient id="logo_paint" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
                         <stop stop-color="#6366f1" />
@@ -26,7 +27,7 @@
                     </linearGradient>
                 </defs>
             </svg>
-            <span style="font-family: var(--font-heading); font-size: 1.5rem; letter-spacing: -0.05em;">PAYRO</span>
+            Payro
         </div>
 
         <ul class="nav-links">
@@ -55,18 +56,18 @@
             {% endif %}
         </ul>
 
-        <div style="margin-top: auto; padding: 1.25rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 20px;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
-                <div style="width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: white; box-shadow: var(--accent-glow);">
+        <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--sidebar-text);">
                     {{ current_user.name[:1]|upper }}
                 </div>
                 <div style="overflow: hidden;">
-                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ current_user.name }}</div>
-                    <div style="font-size: 0.65rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">{{ current_user.role }}</div>
+                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--sidebar-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ current_user.name }}</div>
+                    <div style="font-size: 0.65rem; color: var(--sidebar-text-sec); text-transform: uppercase; letter-spacing: 0.05em;">{{ current_user.role }}</div>
                 </div>
             </div>
-            <a href="{{ url_for('logout') }}" style="color: var(--text-secondary); font-size: 0.75rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: var(--transition); font-weight: 600;">
-                <span style="font-size: 1rem; color: var(--danger);">↪</span> Sign Out
+            <a href="{{ url_for('logout') }}" style="color: var(--sidebar-text-sec); font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: var(--transition);">
+                <span style="font-size: 1rem;">↪</span> Sign Out
             </a>
         </div>
     </nav>

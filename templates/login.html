@@ -1,84 +1,55 @@
 {% extends "base.html" %}
-{% block title %}Executive Access{% endblock %}
+{% block title %}Executive Login{% endblock %}
 
 {% block auth_content %}
-<div class="auth-split-wrapper">
-    <!-- Left: Hero Section -->
-    <div class="auth-hero desktop-only">
-        <img src="{{ url_for('static', filename='img/enterprise_hero.png') }}" class="auth-hero-img" alt="Enterprise Visual">
-        <div class="auth-mesh-overlay"></div>
-        
-        <!-- Hero Header -->
-        <div class="auth-hero-content fadeInUp" style="padding-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="32" height="32" rx="10" fill="white" fill-opacity="0.1"/>
+<div class="login-container fadeInUp">
+    <div class="login-card glass aurora-hover" style="background: rgba(22, 22, 28, 0.6); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.15);">
+        <!-- Brand Header -->
+        <div style="text-align: center; margin-bottom: 3.5rem;">
+            <div style="display: inline-flex; margin-bottom: 1.5rem; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3); border-radius: 16px;">
+                <svg width="64" height="64" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="8" fill="url(#logo_paint_l)"/>
                     <path d="M11 10C11 9.44772 11.4477 9 12 9H17C19.7614 9 22 11.2386 22 14C22 16.7614 19.7614 19 17 19H14V22.5C14 22.7761 13.7761 23 13.5 23H11.5C11.2239 23 11 22.7761 11 22.5V10Z" fill="white"/>
-                    <circle cx="17" cy="14" r="2.5" fill="#6366f1"/>
+                    <circle cx="17" cy="14" r="2.5" fill="#16161c"/>
+                    <defs>
+                        <linearGradient id="logo_paint_l" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#6366f1" />
+                            <stop offset="1" stop-color="#a855f7" />
+                        </linearGradient>
+                    </defs>
                 </svg>
-                <span style="font-family: var(--font-heading); font-weight: 800; font-size: 1.5rem; letter-spacing: -0.05em;">PAYRO</span>
             </div>
-            <h1 style="font-family: var(--font-heading); font-size: 4.5rem; font-weight: 800; line-height: 0.95; margin-bottom: 2rem; letter-spacing: -0.06em;">
-                Orchestrating <br> <span style="color: var(--primary);">Organizations.</span>
-            </h1>
-            <p style="font-size: 1.15rem; color: rgba(255,255,255,0.6); max-width: 480px; line-height: 1.6; font-weight: 500;">
-                The central intelligence layer for modern payroll management and organizational efficiency.
+            <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.06em; margin-bottom: 0.5rem; color: #ffffff;">Payro</h1>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Intelligence for modern organizations.</p>
+        </div>
+
+        {% if error %}
+        <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.2); color: #f87171; padding: 0.85rem; border-radius: 12px; font-size: 0.8rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.6rem;">
+            <span style="font-size: 1.1rem;">⚠</span> {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="input-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; color: var(--text-secondary);">Access Identity</label>
+                <input type="email" name="email" placeholder="admin@payro.com" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;">
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 2.5rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; color: var(--text-secondary);">Security Key</label>
+                <input type="password" name="password" placeholder="••••••••" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem;">
+                Establish Connection ✦
+            </button>
+        </form>
+
+        <div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); text-align: center;">
+            <p style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">
+                Secure Terminal • Audit Node Active
             </p>
-        </div>
-
-        <!-- Hero Footer -->
-        <div class="auth-hero-content" style="display: flex; gap: 3rem; align-items: center;">
-            <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; margin-bottom: 0.25rem;">Node ID</span>
-                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: rgba(255,255,255,0.8);">PX-705-CENTRAL</span>
-            </div>
-            <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; margin-bottom: 0.25rem;">Security Status</span>
-                <span style="font-size: 0.8rem; color: #8cc63f; display: flex; align-items: center; gap: 0.4rem;">● Multi-Factor Active</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right: Form Section -->
-    <div class="auth-form-side">
-        <div class="nexus-card">
-            <div style="text-align: center; margin-bottom: 3.5rem;">
-                <span class="premium-label animate-slide-up stagger-1">System Authentication</span>
-                <h2 style="font-family: var(--font-heading); font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; color: white;" class="animate-slide-up stagger-2">Welcome Back</h2>
-            </div>
-
-            {% if error %}
-            <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.2); color: #f87171; padding: 1rem; border-radius: 16px; font-size: 0.85rem; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 0.75rem;" class="animate-slide-up stagger-2">
-                <span style="font-size: 1.1rem;">×</span> {{ error }}
-            </div>
-            {% endif %}
-
-            <form action="{{ url_for('login') }}" method="POST">
-                <div class="input-group animate-slide-up stagger-3">
-                    <label class="premium-label">Access Identity</label>
-                    <input type="email" name="email" class="nexus-input" placeholder="admin@payro.com" required autocomplete="email">
-                </div>
-                
-                <div class="input-group animate-slide-up stagger-4" style="margin-bottom: 3rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                        <label class="premium-label" style="margin-bottom: 0;">Security Key</label>
-                        <a href="#" style="font-size: 0.7rem; font-weight: 700; color: var(--primary); text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Recovery</a>
-                    </div>
-                    <input type="password" name="password" class="nexus-input" placeholder="••••••••" required autocomplete="current-password">
-                </div>
-
-                <button type="submit" class="btn btn-primary nexus-btn animate-slide-up stagger-4">
-                    Establish Connection ✦
-                </button>
-            </form>
-
-            <div style="margin-top: 4rem; text-align: center;" class="animate-slide-up stagger-4">
-                <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
-                    Protected by Payro Shield™ Enterprise Security
-                </p>
-            </div>
         </div>
     </div>
 </div>
 {% endblock %}
-

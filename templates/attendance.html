@@ -2,14 +2,9 @@
 {% block title %}Attendance & Leaves{% endblock %}
 
 {% block content %}
-<header style="margin-bottom: 3.5rem;">
-    <p class="aurora-text" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 0.5rem;">Time & Presence</p>
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 800; letter-spacing: -0.05em;">Attendance & Leaves</h1>
-        {% if current_user.role == 'employee' %}
-        <button class="btn btn-primary" style="width: auto; padding: 0.6rem 1.25rem; font-size: 0.75rem; border-radius: 12px;" onclick="document.getElementById('leaveModal').style.display='flex'">Request Time Off</button>
-        {% endif %}
-    </div>
+<header style="margin-bottom: 2.5rem;">
+    <h1 style="font-size: 1.875rem; font-weight: 700;">Attendance & Leave Management</h1>
+    <p style="color: var(--text-secondary);">Track organization time-off and coverage impact.</p>
 </header>
 
 <div class="glass" style="padding: 2.5rem; border-radius: 32px;">
@@ -33,14 +28,12 @@
                 {% set target_list = my_leaves if current_user.role == 'employee' else (pending_leaves if pending_leaves else []) %}
                 {% for leave in target_list %}
                 <tr>
-                    <td data-label="Personnel">
-                        <div style="font-weight: 700; color: #f8fafc;">{{ leave.user.name }}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-secondary);">{{ leave.user.role|upper }}</div>
+                    <td data-label="Staff">
+                        <div style="font-weight: 600;">{{ leave.user.name }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ leave.user.role|upper }}</div>
                     </td>
-                    <td data-label="Duration" style="font-size: 0.85rem; font-weight: 600; color: #f8fafc;">
-                        {{ leave.start_date.strftime('%b %d') }} to {{ leave.end_date.strftime('%b %d') }}
-                    </td>
-                    <td data-label="Justification" style="color: var(--text-secondary); font-size: 0.8rem; max-width: 250px;">"{{ leave.reason }}"</td>
+                    <td data-label="Dates">{{ leave.start_date }} to {{ leave.end_date }}</td>
+                    <td data-label="Reason" style="color: var(--text-secondary); font-size: 0.85rem;">"{{ leave.reason }}"</td>
                     <td data-label="Status">
                         <span class="badge {% if leave.status == 'Approved' %}badge-success{% elif leave.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}">
                             {{ leave.status }}
@@ -48,9 +41,9 @@
                         
                         {% if current_user.role in ['admin', 'hr'] and leave.status == 'Pending' %}
                         <div id="impact-{{ leave.id }}" 
-                            style="margin-top:1rem; padding:1rem; border-radius:16px; 
-                            background: rgba(99, 102, 241, 0.05); border:1px solid rgba(99, 102, 241, 0.1); 
-                            font-size: 0.75rem; color: var(--text-secondary); line-height:1.5; display:none;">
+                            style="margin-top:0.75rem; padding:0.75rem; border-radius:0.5rem; 
+                            background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.15); 
+                            font-size:0.8rem; color:var(--text-secondary); line-height:1.6; display:none;">
                         </div>
                         {% endif %}
                     </td>
@@ -75,23 +68,6 @@
         </table>
     </div>
 </div>
-
-<!-- Pagination Controls -->
-{% if pagination and pagination.pages > 1 %}
-<div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
-    {% if pagination.has_prev %}
-    <a href="{{ url_for('view_attendance', page=pagination.prev_num) }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem;">← Prev</a>
-    {% endif %}
-    
-    <span style="display: flex; align-items: center; padding: 0 1rem; color: var(--text-secondary); font-size: 0.8rem; font-weight: 700;">
-        Page {{ pagination.page }} of {{ pagination.pages }}
-    </span>
-    
-    {% if pagination.has_next %}
-    <a href="{{ url_for('view_attendance', page=pagination.next_num) }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem;">Next →</a>
-    {% endif %}
-</div>
-{% endif %}
 
 {% if current_user.role == 'employee' %}
 <div class="glass" style="margin-top: 2rem; padding: 2.5rem; border-radius: 32px; text-align: center; background: linear-gradient(to right, rgba(99, 102, 241, 0.15), rgba(0,0,0,0));">

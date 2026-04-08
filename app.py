@@ -198,15 +198,9 @@ class PayslipGenerator(FPDF):
 def generate_payslip_pdf(payroll_record):
     if not payroll_record or not payroll_record.user:
         pdf = FPDF(); pdf.add_page(); pdf.set_font('helvetica', 'B', 16); pdf.cell(0, 10, "Error: User data missing", ln=True); return pdf.output()
-    
     pdf = PayslipGenerator()
     family = pdf.font_family_name
     pdf.add_page()
-    
-    # Pre-fetch profile/structure to avoid repeated DB hits
-    profile = payroll_record.user.profile
-    ss = profile.salary_structure if profile else None
-    
     pdf.set_fill_color(248, 250, 252)
     pdf.set_font(family, 'B', 12)
     pdf.cell(0, 10, 'Employee Details', ln=True, fill=True)
@@ -214,28 +208,23 @@ def generate_payslip_pdf(payroll_record):
     pdf.cell(95, 7, f'Name: {payroll_record.user.name}', ln=False)
     pdf.cell(95, 7, f'Email: {payroll_record.user.email}', ln=True)
     pdf.cell(95, 7, f'Month/Year: {payroll_record.month}/{payroll_record.year}', ln=False)
-    job_title = profile.job_title if profile else "N/A"
+    job_title = payroll_record.user.profile.job_title if payroll_record.user.profile else "N/A"
     pdf.cell(95, 7, f'Designation: {job_title}', ln=True)
     pdf.ln(10)
-    
     pdf.set_font(family, 'B', 12); pdf.cell(0, 10, 'Salary Breakdown', ln=True, fill=True)
     pdf.set_font(family, 'B', 10); pdf.cell(100, 10, 'Description', border=1); pdf.cell(90, 10, 'Amount (INR)', border=1, ln=True, align='R')
     pdf.set_font(family, '', 10)
-    
+    ss = payroll_record.user.profile.salary_structure if payroll_record.user.profile else None
     base, allowances, deductions = (ss.base_salary, ss.allowances, ss.deductions) if ss else (0, 0, 0)
     pdf.cell(100, 10, 'Base Salary', border=1); pdf.cell(90, 10, f'₹{base:,.2f}', border=1, ln=True, align='R')
     pdf.cell(100, 10, 'Allowances', border=1); pdf.cell(90, 10, f'₹{allowances:,.2f}', border=1, ln=True, align='R')
     pdf.set_text_color(244, 63, 94); pdf.cell(100, 10, 'Deductions', border=1); pdf.cell(90, 10, f'-₹{deductions:,.2f}', border=1, ln=True, align='R')
-    
     pdf.set_text_color(0); pdf.set_font(family, 'B', 12); pdf.cell(100, 12, 'NET PAYABLE', border=1); pdf.cell(90, 12, f'₹{payroll_record.net_amount:,.2f}', border=1, ln=True, align='R')
     pdf.ln(20); pdf.set_font(family, '', 10); pdf.multi_cell(0, 5, 'Computer-generated document. No signature required.')
-    
-    result = pdf.output()
-    pdf.close() # Explicitly close for memory
-    return result
+    return pdf.output()
 
 # --- App Initialization ---
-app = Flask(__name__, static_folder='static', template_folder='templates')
+app = Flask(__name__)
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
@@ -250,20 +239,15 @@ if DATABASE_URL:
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Security: Fallback SECRET_KEY for initial deployment safety
+# Security: Harden SECRET_KEY
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 if app.config['SECRET_KEY'] is None:
-    print("WARNING: SECRET_KEY not found. Using temporary fallback. Set SECRET_KEY in Render Environment!")
-    app.config['SECRET_KEY'] = "dev-fallback-key-change-me"
-
-# DB Connection Check
-if not DATABASE_URL:
-    print("ERROR: DATABASE_URL not found. App will crash on first DB access. Set DATABASE_URL in Render Environment!")
+    raise RuntimeError("SECRET_KEY environment variable is not set. Refusing to start.")
 
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "pool_size": 2, # Reduced for free-tier compatibility
-    "max_overflow": 0,
-    "pool_timeout": 30,
+    "pool_size": 3,
+    "max_overflow": 2,
+    "pool_timeout": 20,
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
@@ -344,7 +328,6 @@ def dashboard():
 @role_required('admin', 'hr')
 def view_employees():
     if request.method == 'POST' and current_user.role in ['admin', 'hr']:
-        # ... (keeping existing POST logic)
         name, email, password, role, dept_id_raw = request.form.get('name'), request.form.get('email'), request.form.get('password'), request.form.get('role'), request.form.get('dept_id')
         dept_id = int(dept_id_raw) if dept_id_raw and dept_id_raw.isdigit() else None
         try:
@@ -362,11 +345,7 @@ def view_employees():
         except Exception as e:
             db.session.rollback()
             flash(f"Error: {str(e)}", "danger")
-
-    page = request.args.get('page', 1, type=int)
-    pagination = User.query.order_by(User.name.asc()).paginate(page=page, per_page=15, error_out=False)
-    employees = pagination.items
-    return render_template('employees.html', employees=employees, pagination=pagination, departments=Department.query.all())
+    return render_template('employees.html', employees=User.query.all(), departments=Department.query.all())
 
 @app.route('/employee/<uuid:id>')
 @login_required
@@ -395,18 +374,8 @@ def view_attendance():
                 leave = LeaveRequest.query.get(request.form.get('leave_id'))
                 if leave: leave.status = request.form.get('action'); db.session.commit()
         except Exception: flash("Error!", "danger")
-    
-    page = request.args.get('page', 1, type=int)
-    if current_user.role in ['admin', 'hr']:
-        pagination = LeaveRequest.query.filter_by(status='Pending').order_by(LeaveRequest.start_date.desc()).paginate(page=page, per_page=10, error_out=False)
-        pending = pagination.items
-        my_leaves = []
-    else:
-        pagination = LeaveRequest.query.filter_by(user_id=current_user.id).order_by(LeaveRequest.start_date.desc()).paginate(page=page, per_page=10, error_out=False)
-        my_leaves = pagination.items
-        pending = []
-        
-    return render_template('attendance.html', pending_leaves=pending, my_leaves=my_leaves, pagination=pagination)
+    pending = LeaveRequest.query.filter_by(status='Pending').all() if current_user.role in ['admin', 'hr'] else []
+    return render_template('attendance.html', pending_leaves=pending, my_leaves=LeaveRequest.query.filter_by(user_id=current_user.id).all())
 
 @app.route('/payroll', methods=['GET', 'POST'])
 @role_required('accounting', 'admin')
@@ -414,28 +383,21 @@ def view_payroll():
     if request.method == 'POST':
         m, y = int(request.form.get('month')), int(request.form.get('year'))
         if not PayrollRecord.query.filter_by(month=m, year=y).first():
-            # Optimization: Use a join or batch fetch if possible, but for now we optimize the view
             for ep in EmployeeProfile.query.all():
                 ss = ep.salary_structure
-                if ss is None: continue
+                if ss is None:
+                    continue
                 net = (ss.base_salary or 0) + (ss.allowances or 0) - (ss.deductions or 0)
                 db.session.add(PayrollRecord(user_id=ep.user_id, month=m, year=y, net_amount=net))
             db.session.commit()
-    
-    # Financial Stats (Optimized with SQL sum)
-    latest_rec = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).first()
+    records = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all()
+    latest_rec = records[0] if records else None
     if latest_rec:
-        payout = db.session.query(db.func.sum(PayrollRecord.net_amount)).filter(PayrollRecord.month == latest_rec.month, PayrollRecord.year == latest_rec.year).scalar() or 0.0
+        payout = sum(r.net_amount for r in records if r.month == latest_rec.month and r.year == latest_rec.year)
     else:
-        payout = 0.0
-    
-    # Pagination for records
-    page = request.args.get('page', 1, type=int)
-    pagination = PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc(), PayrollRecord.paid_date.desc()).paginate(page=page, per_page=15, error_out=False)
-    records = pagination.items
-    
+        payout = 0
     pending_reqs = SalaryChangeRequest.query.filter_by(status='Pending').all()
-    return render_template('payroll.html', records=records, pagination=pagination, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05, now=datetime.now(), pending_requests=pending_reqs)
+    return render_template('payroll.html', records=records, total_payout=payout, tax_est=payout*0.15, bonuses_est=payout*0.05, now=datetime.now(), pending_requests=pending_reqs)
 
 @app.route('/salary/request', methods=['POST'])
 @role_required('hr', 'admin')
@@ -615,22 +577,16 @@ def api_burnout_scores():
 @app.route('/export/employees')
 @role_required('admin', 'hr')
 def export_employees():
-    # Optimization: Use joinedload to fetch everything in ONE query
-    from sqlalchemy.orm import joinedload
-    employees = User.query.options(joinedload(User.profile).joinedload(EmployeeProfile.dept)).all()
-    
     wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Employees"
     header_font = Font(bold=True, color="FFFFFF"); header_fill = PatternFill("solid", fgColor="6366F1")
     headers = ["ID", "Name", "Email", "Role", "Department", "Job Title", "Joining Date", "Contact"]
     for col, h in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=h); cell.font = header_font; cell.fill = header_fill; cell.alignment = Alignment(horizontal='center')
-    
-    for row, emp in enumerate(employees, 2):
+    for row, emp in enumerate(User.query.all(), 2):
         p = emp.profile
         ws.cell(row=row, column=1, value=str(emp.id)[:8]); ws.cell(row=row, column=2, value=emp.name); ws.cell(row=row, column=3, value=emp.email)
         ws.cell(row=row, column=4, value=emp.role); ws.cell(row=row, column=5, value=p.dept.name if p and p.dept else "N/A")
         ws.cell(row=row, column=6, value=p.job_title if p else "N/A"); ws.cell(row=row, column=7, value=str(p.joining_date.date()) if p and p.joining_date else "N/A"); ws.cell(row=row, column=8, value=p.contact if p else "N/A")
-    
     for col in ws.columns: ws.column_dimensions[col[0].column_letter].width = 18
     output = io.BytesIO(); wb.save(output); output.seek(0)
     return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='payro-employees.xlsx')
@@ -638,28 +594,19 @@ def export_employees():
 @app.route('/export/payroll')
 @role_required('admin', 'accounting')
 def export_payroll():
-    # Optimization: Joined loading to avoid N+1 queries
-    from sqlalchemy.orm import joinedload
-    payroll_records = PayrollRecord.query.options(joinedload(PayrollRecord.user)).order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all()
-    
     wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Payroll Records"
     header_font = Font(bold=True, color="FFFFFF"); header_fill = PatternFill("solid", fgColor="6366F1")
     headers = ["Employee", "Email", "Month", "Year", "Net Amount", "Status", "Paid Date"]
     for col, h in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=h); cell.font = header_font; cell.fill = header_fill
-    
-    for row, rec in enumerate(payroll_records, 2):
+    for row, rec in enumerate(PayrollRecord.query.order_by(PayrollRecord.year.desc(), PayrollRecord.month.desc()).all(), 2):
         ws.cell(row=row, column=1, value=rec.user.name if rec.user else "N/A"); ws.cell(row=row, column=2, value=rec.user.email if rec.user else "N/A"); ws.cell(row=row, column=3, value=rec.month)
         ws.cell(row=row, column=4, value=rec.year); ws.cell(row=row, column=5, value=round(rec.net_amount, 2)); ws.cell(row=row, column=6, value=rec.status)
         ws.cell(row=row, column=7, value=str(rec.paid_date.date()) if rec.paid_date else "N/A")
-    
     for col in ws.columns: ws.column_dimensions[col[0].column_letter].width = 16
     output = io.BytesIO(); wb.save(output); output.seek(0)
     return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='payro-payroll.xlsx')
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
-    print(f"DEBUG: App starting on port {port}...")
-    print(f"DEBUG: DATABASE_URL present: {'Yes' if os.environ.get('DATABASE_URL') else 'No'}")
-    print(f"DEBUG: SECRET_KEY present: {'Yes' if os.environ.get('SECRET_KEY') else 'No'}")
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
