@@ -239,15 +239,20 @@ if DATABASE_URL:
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Security: Harden SECRET_KEY
+# Security: Fallback SECRET_KEY for initial deployment safety
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 if app.config['SECRET_KEY'] is None:
-    raise RuntimeError("SECRET_KEY environment variable is not set. Refusing to start.")
+    print("WARNING: SECRET_KEY not found. Using temporary fallback. Set SECRET_KEY in Render Environment!")
+    app.config['SECRET_KEY'] = "dev-fallback-key-change-me"
+
+# DB Connection Check
+if not DATABASE_URL:
+    print("ERROR: DATABASE_URL not found. App will crash on first DB access. Set DATABASE_URL in Render Environment!")
 
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "pool_size": 3,
-    "max_overflow": 2,
-    "pool_timeout": 20,
+    "pool_size": 2, # Reduced for free-tier compatibility
+    "max_overflow": 0,
+    "pool_timeout": 30,
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
@@ -609,4 +614,7 @@ def export_payroll():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
+    print(f"DEBUG: App starting on port {port}...")
+    print(f"DEBUG: DATABASE_URL present: {'Yes' if os.environ.get('DATABASE_URL') else 'No'}")
+    print(f"DEBUG: SECRET_KEY present: {'Yes' if os.environ.get('SECRET_KEY') else 'No'}")
     app.run(host="0.0.0.0", port=port, debug=False)
