@@ -72,6 +72,23 @@
     </div>
 </div>
 
+<!-- Pagination Controls -->
+{% if pagination and pagination.pages > 1 %}
+<div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('view_employees', page=pagination.prev_num) }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem;">← Prev</a>
+    {% endif %}
+    
+    <span style="display: flex; align-items: center; padding: 0 1rem; color: var(--text-secondary); font-size: 0.8rem; font-weight: 700;">
+        Page {{ pagination.page }} of {{ pagination.pages }}
+    </span>
+    
+    {% if pagination.has_next %}
+    <a href="{{ url_for('view_employees', page=pagination.next_num) }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem;">Next →</a>
+    {% endif %}
+</div>
+{% endif %}
+
 <!-- Add Modal -->
 <div id="addModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
     <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark); border-radius: 32px;">

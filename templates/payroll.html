@@ -130,7 +130,22 @@
         </table>
     </div>
     
-    <div id="pagination" style="display:flex; justify-content:center; gap:0.5rem; margin-top:2rem;"></div>
+    <!-- Pagination Controls -->
+    {% if pagination and pagination.pages > 1 %}
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('view_payroll', page=pagination.prev_num) }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem;">← Prev</a>
+        {% endif %}
+        
+        <span style="display: flex; align-items: center; padding: 0 1rem; color: var(--text-secondary); font-size: 0.8rem; font-weight: 700;">
+            Page {{ pagination.page }} of {{ pagination.pages }}
+        </span>
+        
+        {% if pagination.has_next %}
+        <a href="{{ url_for('view_payroll', page=pagination.next_num) }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem;">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
 <!-- Process Modal -->
@@ -206,28 +221,9 @@ async function explainPay(ids) {
     }
 }
 
-// Simple client-side pagination
-document.addEventListener('DOMContentLoaded', () => {
-    const rows = Array.from(document.querySelectorAll('.pay-row'));
-    const perPage = 10;
-    const numPages = Math.ceil(rows.length / perPage);
-    const pagin = document.getElementById('pagination');
-    
-    if(numPages <= 1) return;
-    
-    for(let i=1; i<=numPages; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = 'btn glass';
-        btn.style.width = '35px'; btn.style.padding = '0.5rem';
-        btn.onclick = () => {
-            rows.forEach((r, idx) => r.style.display = (idx >= (i-1)*perPage && idx < i*perPage) ? '' : 'none');
-            document.querySelectorAll('#pagination button').forEach(b => b.style.borderColor = 'var(--glass-border)');
-            btn.style.borderColor = 'var(--primary)';
-        };
-        pagin.appendChild(btn);
-    }
-    pagin.firstChild.click();
-});
+// Simple client-side search (Server pagination remains active)
+function filterPayTable() {
+    // ... search logic ...
+}
 </script>
 {% endblock %}
