@@ -224,7 +224,7 @@ def generate_payslip_pdf(payroll_record):
     return pdf.output()
 
 # --- App Initialization ---
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
@@ -608,5 +608,5 @@ def export_payroll():
     return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='payro-payroll.xlsx')
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
