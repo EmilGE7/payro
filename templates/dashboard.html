@@ -2,60 +2,69 @@
 {% block title %}Executive Dashboard{% endblock %}
 
 {% block content %}
-<header style="margin-bottom: 3.5rem;">
-    <p style="color: var(--primary); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; color: #818cf8;">Intelligence Overview</p>
-    <h1 style="font-size: 2.75rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text-primary);">Welcome, {{ current_user.name }}</h1>
+<header class="page-header fadeInUp">
+    <div>
+        <p style="color: var(--primary); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 0.5rem;">Intelligence Overview</p>
+        <h1>Welcome, {{ current_user.name.split(' ')[0] }}</h1>
+    </div>
+    <div id="connection-status" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; background: rgba(132, 204, 22, 0.1); border: 1px solid rgba(132, 204, 22, 0.2); border-radius: 12px;">
+        <div style="width: 8px; height: 8px; background: #84cc16; border-radius: 50%; box-shadow: 0 0 10px #84cc16;"></div>
+        <span style="font-size: 0.7rem; font-weight: 800; color: #84cc16; text-transform: uppercase; letter-spacing: 0.05em;">Node Connected</span>
+    </div>
 </header>
 
 <div class="grid-stats">
-    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 32px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0,0,0,0)); animation-delay: 0.1s;">
+    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 24px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(0,0,0,0)); animation-delay: 0.1s;">
         <div class="stat-label" style="color: #a5b4fc;">Workforce</div>
-        <div class="stat-value" data-countup="{{ total_employees }}" style="color: #ffffff;">0</div>
-        <div style="color: #818cf8; font-size: 0.75rem; font-weight: 700; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-            <div style="width: 7px; height: 7px; background: currentColor; border-radius: 50%;"></div>
-            Active Members
+        <div class="stat-value" data-countup="{{ total_employees }}">0</div>
+        <div style="color: #818cf8; font-size: 0.7rem; font-weight: 800; margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase;">
+            <span style="font-size: 1rem;">👥</span> Active Members
         </div>
     </div>
-    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 32px; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0)); animation-delay: 0.2s;">
+    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 24px; background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0)); animation-delay: 0.2s;">
         <div class="stat-label">Expenditure</div>
-        <div class="stat-value" data-countup="{{ total_payroll|int }}" data-prefix="₹" style="color: #ffffff;">0</div>
-        <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; margin-top: 1rem;">Current Period</div>
+        <div class="stat-value" data-countup="{{ total_payroll|int }}" data-prefix="₹">0</div>
+        <div style="color: var(--text-muted); font-size: 0.7rem; font-weight: 800; margin-top: 1.5rem; text-transform: uppercase;">Current Period</div>
     </div>
-    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 32px; background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(0,0,0,0)); animation-delay: 0.3s;">
+    <div class="stat-card glass aurora-hover fadeInUp" style="border-radius: 24px; background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(0,0,0,0)); animation-delay: 0.3s;">
         <div class="stat-label" style="color: #fdba74;">Pending</div>
-        <div class="stat-value" data-countup="{{ pending_leaves }}" style="color: #ffffff;">0</div>
-        <div style="color: #fb923c; font-size: 0.75rem; font-weight: 700; margin-top: 1rem;">Leave Requests</div>
+        <div class="stat-value" data-countup="{{ pending_leaves }}">0</div>
+        <div style="color: #fb923c; font-size: 0.7rem; font-weight: 800; margin-top: 1.5rem; text-transform: uppercase;">Leave Requests</div>
     </div>
     
-    <div class="stat-card glass ai-card fadeInUp" style="border-radius: 32px; background: var(--card-bg); animation-delay: 0.4s; position: relative; overflow: hidden;">
-        <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.2), transparent 60%); pointer-events: none; z-index: 0;"></div>
+    <div class="stat-card glass ai-card fadeInUp" style="border-radius: 24px; animation-delay: 0.4s; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15), transparent 60%); pointer-events: none; z-index: 0;"></div>
         <div style="position: relative; z-index: 1;">
-            <div class="stat-label" style="color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-size: 1.2rem; color: #818cf8;">✦</span> AI INSIGHTS
+            <div class="stat-label" style="display: flex; align-items: center; gap: 0.5rem; color: #ffffff;">
+                <span style="color: #818cf8;">✦</span> Payro Insight
             </div>
-            <div id="ai-narrative" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; margin: 1rem 0; line-height: 1.6; min-height: 48px;">
-                Monthly intelligence summary.
-            </div>
-            <div style="display: flex; gap: 0.75rem;">
-                <button id="gen-report-btn" onclick="generateReport()" class="btn btn-primary" style="padding: 0.6rem 1.25rem; font-size: 0.75rem; border-radius: 12px; width: auto;">
-                    Generate
-                </button>
-                <a id="dl-report-btn" href="/ai/monthly-report/pdf" class="btn" style="display: none; padding: 0.6rem 1.25rem; font-size: 0.75rem; border-radius: 12px; width: auto;">
-                    PDF
-                </a>
+            <div id="ai-narrative" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin: 1rem 0; line-height: 1.5; min-height: 40px;">
+                Ready for internal audit summary.
             </div>
         </div>
+        <div style="position: relative; z-index: 1; display: flex; gap: 0.5rem;">
+            <button id="gen-report-btn" onclick="generateReport()" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.7rem; border-radius: 10px; width: auto;">
+                Analyze
+            </button>
+            <a id="dl-report-btn" href="/ai/monthly-report/pdf" class="btn glass" style="display: none; padding: 0.5rem 1rem; font-size: 0.7rem; border-radius: 10px; width: auto; text-decoration: none;">
+                Export
+            </a>
+        </div>
+    </div>
 </div>
 
-<div class="glass" style="padding: 2.5rem; border-radius: 32px;">
-    <h2 style="font-size: 1.25rem; margin-bottom: 2rem; font-weight: 700;">Recent Transactions</h2>
+<div class="glass fadeInUp" style="padding: 1.5rem; border-radius: 24px; animation-delay: 0.5s;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding: 0 0.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em;">Recent Transactions</h2>
+        <a href="{{ url_for('view_payroll') }}" style="font-size: 0.75rem; color: var(--primary); font-weight: 700; text-decoration: none;">View Ledger →</a>
+    </div>
     <div style="overflow-x: auto;">
         <table class="payro-table">
             <thead>
                 <tr>
-                    <th>EMPLOYEE</th>
-                    <th>MONTH</th>
-                    <th>AMOUNT</th>
+                    <th>EMPLOYEE IDENTITY</th>
+                    <th>PERIOD</th>
+                    <th>SETTLEMENT</th>
                     <th>STATUS</th>
                     <th>DATE</th>
                 </tr>
@@ -63,17 +72,22 @@
             <tbody>
                 {% for act in recent_activities %}
                 <tr>
-                    <td data-label="Staff" style="font-weight: 600; color: var(--text-primary);">
-                        {{ act.user.name if act.user else 'System / Archived' }}
+                    <td data-label="Staff">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.65rem; color: var(--text-muted);">
+                                {{ act.user.name[:1]|upper if act.user else 'S' }}
+                            </div>
+                            <span style="font-weight: 700; color: #ffffff;">{{ act.user.name if act.user else 'System / Archived' }}</span>
+                        </div>
                     </td>
-                    <td data-label="Period">{{ act.month }}/{{ act.year }}</td>
-                    <td data-label="Paid" style="font-weight: 700;">₹{{ "{:,.2f}".format(act.net_amount) }}</td>
+                    <td data-label="Period" style="font-weight: 600; font-size: 0.8rem; color: var(--text-secondary);">{{ act.month|upper }} {{ act.year }}</td>
+                    <td data-label="Paid" style="font-weight: 800; color: #ffffff;">₹{{ "{:,.2f}".format(act.net_amount) }}</td>
                     <td data-label="Status">
-                        <span class="badge {% if act.status == 'Paid' %}badge-success{% elif act.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}">
-                            {{ act.status }}
+                        <span class="badge {% if act.status == 'Paid' %}badge-success{% elif act.status == 'Pending' %}badge-warning{% else %}badge-danger{% endif %}" style="font-size: 0.65rem; padding: 0.25rem 0.6rem;">
+                            {{ act.status|upper }}
                         </span>
                     </td>
-                    <td data-label="Date" style="color: var(--text-secondary);">{{ act.paid_date.strftime('%Y-%m-%d') if act.paid_date else '—' }}</td>
+                    <td data-label="Date" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500;">{{ act.paid_date.strftime('%d %b %Y') if act.paid_date else '—' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -82,25 +96,27 @@
 </div>
 
 <script>
-// Count-up animation
 document.querySelectorAll('[data-countup]').forEach(el => {
     const target = +el.dataset.countup;
     const prefix = el.dataset.prefix || '';
     let current = 0;
-    const step = Math.max(target / 50, 1);
+    const duration = 1500;
+    const frames = 60;
+    const step = target / frames;
+    const interval = duration / frames;
+    
     const timer = setInterval(() => {
         current = Math.min(current + step, target);
         el.textContent = prefix + Math.floor(current).toLocaleString('en-IN');
         if (current >= target) clearInterval(timer);
-    }, 25);
+    }, interval);
 });
 
-// AI Report Generation
 function generateReport() {
     const btn = document.getElementById('gen-report-btn');
     const narrative = document.getElementById('ai-narrative');
     const dlBtn = document.getElementById('dl-report-btn');
-    btn.textContent = '⏳ Generating...';
+    btn.innerHTML = 'Analyzing...';
     btn.disabled = true;
     
     fetch('/ai/monthly-report')
@@ -108,17 +124,17 @@ function generateReport() {
         .then(data => {
             if (data.narrative) {
                 narrative.textContent = data.narrative;
-                narrative.style.color = 'var(--text-primary)';
+                narrative.style.color = '#ffffff';
                 dlBtn.style.display = 'inline-flex';
             } else {
-                narrative.textContent = 'Unable to generate report right now.';
+                narrative.textContent = 'Operational metrics unavailable.';
             }
-            btn.textContent = '✦ Regenerate';
+            btn.innerHTML = 'Regenerate';
             btn.disabled = false;
         })
         .catch(() => {
-            narrative.textContent = 'Service unavailable. Try again later.';
-            btn.textContent = '✦ Generate Report';
+            narrative.textContent = 'Service link timeout.';
+            btn.innerHTML = 'Retry Analysis';
             btn.disabled = false;
         });
 }

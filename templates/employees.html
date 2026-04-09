@@ -2,34 +2,32 @@
 {% block title %}Workforce Management{% endblock %}
 
 {% block content %}
-<header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
+<header class="page-header fadeInUp">
     <div>
-        <h1 style="font-size: 1.875rem; font-weight: 700;">Workforce Management</h1>
-        <p style="color: var(--text-secondary);">View and manage organization members.</p>
+        <h1>Workforce Management</h1>
+        <p>View and manage organization members across all departments.</p>
     </div>
     <div style="display: flex; gap: 1rem;">
-        <a href="{{ url_for('export_employees') }}" class="btn glass" 
-            style="width:auto; padding:0.75rem 1.5rem; text-decoration:none; color:white; font-size:0.875rem;">
-            ⬇ Export Excel
+        <a href="{{ url_for('export_employees') }}" class="btn glass" style="width:auto; padding:0.75rem 1.5rem; text-decoration:none;">
+            ⬇ Export Dataset
         </a>
         {% if current_user.role == 'admin' %}
-        <button class="btn btn-primary" onclick="document.getElementById('addModal').style.display='flex'" style="width: auto; padding: 0.75rem 1.5rem;">Add New Employee</button>
+        <button class="btn btn-primary" onclick="document.getElementById('addModal').style.display='flex'" style="width: auto; padding: 0.75rem 1.5rem;">Add New Member</button>
         {% endif %}
     </div>
 </header>
 
-<div style="margin-bottom:1.5rem;">
-    <input type="text" id="emp-search" placeholder="🔍 Search by name, email, role..." 
-        style="max-width:400px; padding:0.65rem 1rem; background:rgba(255,255,255,0.03); 
-        border:1px solid var(--glass-border); border-radius:12px; color:white; width:100%; outline:none; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+<div class="search-group fadeInUp" style="animation-delay: 0.1s;">
+    <span style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);">🔍</span>
+    <input type="text" id="emp-search" placeholder="Search by name, email, or role...">
 </div>
 
-<div class="glass" style="padding: 2rem;">
+<div class="glass fadeInUp" style="padding: 1rem; border-radius: 24px; animation-delay: 0.2s;">
     <div style="overflow-x: auto;">
         <table class="payro-table">
             <thead>
                 <tr>
-                    <th>NAME/EMAIL</th>
+                    <th>NAME & IDENTITY</th>
                     <th>ROLE</th>
                     <th>DEPARTMENT</th>
                     <th>STATUS</th>
@@ -40,19 +38,27 @@
                 {% for emp in employees %}
                 <tr data-employee-id="{{ emp.id }}" data-searchable="{{ emp.name }} {{ emp.email }} {{ emp.role }} {{ emp.profile.dept.name if emp.profile and emp.profile.dept else '' }}">
                     <td data-label="Staff">
-                        <div style="font-weight: 600;">{{ emp.name }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ emp.email }}</div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.7rem; color: var(--primary);">
+                                {{ emp.name[:1]|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #ffffff;">{{ emp.name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ emp.email }}</div>
+                            </div>
+                        </div>
                     </td>
                     <td data-label="Role"><span class="badge badge-info">{{ emp.role|upper }}</span></td>
                     <td data-label="Department">{{ emp.profile.dept.name if emp.profile and emp.profile.dept else 'Unassigned' }}</td>
-                    <td data-label="Status" style="padding: 1rem;">
-                        <span style="color: var(--success);">● Active</span>
-                        <span id="risk-{{ emp.id }}" style="display:none; margin-left:0.4rem;"></span>
+                    <td data-label="Status">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: var(--success); font-size: 0.8rem;">●</span>
+                            <span style="font-weight: 600; font-size: 0.8rem;">Active</span>
+                            <span id="risk-{{ emp.id }}" style="display:none; margin-left:0.4rem;"></span>
+                        </div>
                     </td>
                     <td data-label="Actions">
-                        <div style="display: flex; gap: 0.75rem;">
-                            <a href="{{ url_for('view_employee_profile', id=emp.id) }}" style="color: #818CF8; font-weight: 700; text-decoration: none; font-size: 0.85rem;">View Profile</a>
-                        </div>
+                        <a href="{{ url_for('view_employee_profile', id=emp.id) }}" class="btn glass" style="width: auto; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 10px; text-decoration: none;">View Profile</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -62,45 +68,51 @@
 </div>
 
 <!-- Add Modal -->
-<div id="addModal" class="glass shadow-premium" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
-    <div class="glass" style="width: 400px; padding: 2.5rem; background: var(--bg-dark); border-radius: 32px;">
-        <h2 style="margin-bottom: 1.5rem;">Add Employee</h2>
+<div id="addModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content glass fadeInUp">
+        <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 2rem; letter-spacing: -0.02em;">Add New Member</h2>
         <form action="{{ url_for('view_employees') }}" method="POST">
             <div class="input-group">
-                <input type="text" name="name" placeholder="Full Name" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;">
+                <label style="display:block; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.5rem;">Full Name</label>
+                <input type="text" name="name" placeholder="John Doe" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white;">
             </div>
             <div class="input-group">
-                <input type="email" name="email" placeholder="Email" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;">
+                <label style="display:block; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.5rem;">Email Address</label>
+                <input type="email" name="email" placeholder="john@example.com" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white;">
             </div>
             <div class="input-group">
-                <input type="password" name="password" placeholder="Initial Password" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none;">
+                <label style="display:block; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.5rem;">Security Key</label>
+                <input type="password" name="password" placeholder="Initial Password" required style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white;">
             </div>
-            <div class="input-group">
-                <select name="dept_id" style="width: 100%; padding: 0.85rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 12px; outline: none;">
-                    <option value="">Select Department</option>
-                    {% for dept in departments %}
-                    <option value="{{ dept.id }}">{{ dept.name }}</option>
-                    {% endfor %}
-                </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="input-group">
+                    <label style="display:block; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.5rem;">Department</label>
+                    <select name="dept_id" style="width: 100%; padding: 0.85rem; background: #0a0a0f; color: white; border: 1px solid var(--glass-border); border-radius: 12px;">
+                        <option value="">Select Dept</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label style="display:block; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.5rem;">Organizational Role</label>
+                    <select name="role" style="width: 100%; padding: 0.85rem; background: #0a0a0f; color: white; border: 1px solid var(--glass-border); border-radius: 12px;">
+                        <option value="employee">Employee</option>
+                        <option value="hr">HR</option>
+                        <option value="accounting">Accounting</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
             </div>
-            <div class="input-group">
-                <select name="role" style="width: 100%; padding: 0.85rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 12px; outline: none;">
-                    <option value="employee">Employee</option>
-                    <option value="hr">HR</option>
-                    <option value="accounting">Accounting</option>
-                    <option value="admin">Admin</option>
-                </select>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <button type="submit" class="btn btn-primary">Save Employee</button>
-                <button type="button" class="btn glass" onclick="document.getElementById('addModal').style.display='none'">Cancel</button>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 2;">Provision Member</button>
+                <button type="button" class="btn glass" onclick="document.getElementById('addModal').style.display='none'" style="flex: 1;">Cancel</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-// Employee Search Logic
 document.getElementById('emp-search').addEventListener('input', function() {
     const q = this.value.toLowerCase();
     document.querySelectorAll('tbody tr[data-searchable]').forEach(row => {
@@ -108,7 +120,6 @@ document.getElementById('emp-search').addEventListener('input', function() {
     });
 });
 
-// Burnout Risk Loader
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/burnout-scores')
         .then(r => r.json())
@@ -120,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const labels = { healthy: '🟢', watch: '🟡 Watch', at_risk: '🔴 At Risk' };
                 el.textContent = labels[s.risk_level] || '';
                 el.className = `risk-badge risk-${s.risk_level}`;
-                el.title = s.reason;
                 el.style.display = 'inline-flex';
             });
         })
