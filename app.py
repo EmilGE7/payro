@@ -161,15 +161,23 @@ def analyze_payroll_data(db_session, user_prompt=None):
 
 # --- Business Logic: PDF Helpers ---
 def setup_pdf_fonts(pdf):
-    """Safely adds DejaVu fonts if available, otherwise returns helvetica."""
-    # Common paths for Render (Ubuntu/Debian)
-    font_regular = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-    font_bold = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    """Safely adds DejaVu fonts if available (system or local), otherwise returns helvetica."""
+    # Prioritize local project fonts for consistency across environments
+    local_regular = os.path.join(app.root_path, "static", "fonts", "DejaVuSans.ttf")
+    local_bold = os.path.join(app.root_path, "static", "fonts", "DejaVuSans-Bold.ttf")
     
-    if os.path.exists(font_regular) and os.path.exists(font_bold):
+    # Fallback system paths for Render/Ubuntu
+    sys_regular = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+    sys_bold = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    
+    font_reg = local_regular if os.path.exists(local_regular) else sys_regular
+    font_bld = local_bold if os.path.exists(local_bold) else sys_bold
+    
+    if os.path.exists(font_reg) and os.path.exists(font_bld):
         try:
-            pdf.add_font('DejaVu', '', font_regular, uni=True)
-            pdf.add_font('DejaVu', 'B', font_bold, uni=True)
+            # fpdf2 uses 'uni=True' by default, but we specify it for clarity
+            pdf.add_font('DejaVu', '', font_reg)
+            pdf.add_font('DejaVu', 'B', font_bld)
             return 'DejaVu'
         except Exception:
             pass
@@ -200,6 +208,10 @@ def generate_payslip_pdf(payroll_record):
         pdf = FPDF(); pdf.add_page(); pdf.set_font('helvetica', 'B', 16); pdf.cell(0, 10, "Error: User data missing", ln=True); return pdf.output()
     pdf = PayslipGenerator()
     family = pdf.font_family_name
+    
+    # Safety: If Unicode font failed to load, replace rupee symbol to avoid crash
+    curr_sym = "₹" if family == 'DejaVu' else "Rs."
+    
     pdf.add_page()
     pdf.set_fill_color(248, 250, 252)
     pdf.set_font(family, 'B', 12)
@@ -212,14 +224,14 @@ def generate_payslip_pdf(payroll_record):
     pdf.cell(95, 7, f'Designation: {job_title}', ln=True)
     pdf.ln(10)
     pdf.set_font(family, 'B', 12); pdf.cell(0, 10, 'Salary Breakdown', ln=True, fill=True)
-    pdf.set_font(family, 'B', 10); pdf.cell(100, 10, 'Description', border=1); pdf.cell(90, 10, 'Amount (INR)', border=1, ln=True, align='R')
+    pdf.set_font(family, 'B', 10); pdf.cell(100, 10, 'Description', border=1); pdf.cell(90, 10, f'Amount ({curr_sym})', border=1, ln=True, align='R')
     pdf.set_font(family, '', 10)
     ss = payroll_record.user.profile.salary_structure if payroll_record.user.profile else None
     base, allowances, deductions = (ss.base_salary, ss.allowances, ss.deductions) if ss else (0, 0, 0)
-    pdf.cell(100, 10, 'Base Salary', border=1); pdf.cell(90, 10, f'₹{base:,.2f}', border=1, ln=True, align='R')
-    pdf.cell(100, 10, 'Allowances', border=1); pdf.cell(90, 10, f'₹{allowances:,.2f}', border=1, ln=True, align='R')
-    pdf.set_text_color(244, 63, 94); pdf.cell(100, 10, 'Deductions', border=1); pdf.cell(90, 10, f'-₹{deductions:,.2f}', border=1, ln=True, align='R')
-    pdf.set_text_color(0); pdf.set_font(family, 'B', 12); pdf.cell(100, 12, 'NET PAYABLE', border=1); pdf.cell(90, 12, f'₹{payroll_record.net_amount:,.2f}', border=1, ln=True, align='R')
+    pdf.cell(100, 10, 'Base Salary', border=1); pdf.cell(90, 10, f'{curr_sym}{base:,.2f}', border=1, ln=True, align='R')
+    pdf.cell(100, 10, 'Allowances', border=1); pdf.cell(90, 10, f'{curr_sym}{allowances:,.2f}', border=1, ln=True, align='R')
+    pdf.set_text_color(244, 63, 94); pdf.cell(100, 10, 'Deductions', border=1); pdf.cell(90, 10, f'-{curr_sym}{deductions:,.2f}', border=1, ln=True, align='R')
+    pdf.set_text_color(0); pdf.set_font(family, 'B', 12); pdf.cell(100, 12, 'NET PAYABLE', border=1); pdf.cell(90, 12, f'{curr_sym}{payroll_record.net_amount:,.2f}', border=1, ln=True, align='R')
     pdf.ln(20); pdf.set_font(family, '', 10); pdf.multi_cell(0, 5, 'Computer-generated document. No signature required.')
     return pdf.output()
 
@@ -498,6 +510,11 @@ def ai_monthly_report_pdf():
     if not narrative: return redirect(url_for('dashboard'))
     pdf = FPDF()
     family = setup_pdf_fonts(pdf)
+    
+    # Safety: If Unicode font failed to load, replace rupee symbol in narrative
+    if family != 'DejaVu':
+        narrative = narrative.replace("₹", "Rs.")
+        
     pdf.add_page()
     pdf.set_font(family, 'B', 20)
     pdf.set_text_color(99, 102, 241)
